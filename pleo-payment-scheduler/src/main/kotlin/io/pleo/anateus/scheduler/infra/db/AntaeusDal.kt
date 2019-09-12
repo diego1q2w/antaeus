@@ -31,13 +31,11 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
-    fun fetchPendingInvoices(limit: Int, lastID: Int = 0): List<Invoice> {
+    fun schedulePendingInvoices(): Int {
         return transaction(db) {
-            InvoiceTable
-                    .select{ InvoiceTable.status.eq(InvoiceStatus.PENDING.toString()) and InvoiceTable.id.greater(lastID) }
-                    .orderBy(InvoiceTable.id, true)
-                    .limit(limit)
-                    .map { it.toInvoice() }
+            InvoiceTable.update({InvoiceTable.status.eq(InvoiceStatus.PENDING.toString())}) {
+                it[status] = InvoiceStatus.SCHEDULED.toString()
+            }
         }
     }
 

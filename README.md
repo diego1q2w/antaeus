@@ -53,6 +53,8 @@ TODO: Update the App Structure
 ### Iterations
 `Iteration 1` - I did the app refactor, no logic changed. I just made sure everything still works as it was. This is perhaps, the largest commit this project will have.
 
+`Iteration 2` - Added the payment scheduler, which marks the invoices as "Ready to process" (every month), is worth noticing that this step does not execute the payment.
+
 ## Developing
 
 Requirements:
