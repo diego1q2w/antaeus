@@ -14,6 +14,45 @@ Fork this repo with your solution. Ideally, we'd like to see your progression th
 
 Please let us know how long the challenge takes you. We're not looking for how speedy or lengthy you are. It's just really to give us a clearer idea of what you've produced in the time you decided to take. Feel free to go as big or as small as you want.
 
+## Solution
+I am new in Kotlin, so I spend a couple of days during my free time to learn it!
+
+Designing: When we think about payments, the first thing that pops up in your mind is what you do if payment failed? Well, you retry, and after some attempts, you might want to notify.
+When we look at this problem from the DDD perspective, scheduling, retrying, and notifying are three different tasks (at least for me). And thus, separating them feels natural, regardless of your infrastructure specifics (monolithic, microservice or lambda).
+
+That's the main reason why I change the project structure, having each layer of each domain as a module can be confusing, and by that, you'd end up with something like this.
+```
+├── pleo-antaeus-schedule-app
+├── pleo-antaeus-schedule-core
+├── pleo-antaeus-schedule-data
+├── pleo-antaeus-retry-app
+├── pleo-antaeus-retry-core
+├── pleo-antaeus-notification-core
+├── pleo-antaeus-notification-app
+└── ...
+```
+Which is not bad at all but at least for me can be confusing, so instead of that why not having something like this:
+```
+├── pleo-antaeus-schedule
+    ├─── app - Is the business logic, use cases, what you call as core
+    ├─── domain - Are the domain entities, what you call models
+    ├─── infra - Is the layer from which you fetch data, you name it data
+    ├─── delivery - I am used to calling it to interface, but that's not possible in Kotlin. This package would be the entry point to your domain the rest API, and event handlers would go here
+├── pleo-antaeus-retry
+    ├─── app
+    ├─── domain
+    ├─── infra
+    ├─── delivery
+└── ...
+```
+Now, you see where I am getting at. 
+
+The idea is to have two micro-services one for schedule and another for retries. The notification domain will live within the retry microservice. Both micro-services will communicate via events (I'll use RabbitMQ). I have to say that the notification system will be rather simple probably just a logging. The point is to show the possibility to work and maintain, even in this hybrid infrastructures with ease.
+
+TODO: Update the App Structure
+### Iterations
+`Iteration 1` - I did the app refactor, no logic changed. I just made sure everything still works as it was. This is perhaps, the largest commit this project will have.
+
 ## Developing
 
 Requirements:

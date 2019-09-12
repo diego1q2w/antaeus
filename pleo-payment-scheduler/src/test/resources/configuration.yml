@@ -1,0 +1,7 @@
+server:
+  port: 7000
+
+domain:
+  failureBillingScheduleDelayHours: 3
+  billingScheduleDelayExpression: "1 of jan-dec 00:00"
+  invoiceMaxRetries: 3
