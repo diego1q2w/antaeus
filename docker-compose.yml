@@ -1,0 +1,37 @@
+version: "3.4"
+
+services:
+  scheduler:
+    image: diego1q2w/jdk-11-sqlite-alpine
+    depends_on:
+      - rabbitmq
+      - rabbitmq-scheduler-topology
+    ports:
+      - "7000:7000"
+    volumes:
+      - build-cache:/root/.gradle
+      - .:/app
+    environment:
+      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
+      WAIT_FOR_PORTS: rabbitmq:5672
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+    logging:
+      driver: none
+
+  rabbitmq-scheduler-topology:
+    image: diego1q2w/setup-events-topology:latest
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./pleo-payment-scheduler/src/main/resources/topology:/setup-events-topology/topology
+    environment:
+      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
+      SERVICE_NAME: scheduler
+      WAIT_FOR_PORTS: rabbitmq:5672
+
+volumes:
+  build-cache:

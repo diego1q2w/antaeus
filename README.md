@@ -57,6 +57,8 @@ TODO: Update the App Structure
 
 `Iteration 3` - The payments processor was added, It will fetch all the payments marked as `scheduled`, then mark them as `processing` and finally publish a message to the bus (Mocked for now). This event will in future iterations be consumed by the scheduler micro-service to finally commit the payment. Why I am doing this? I will explain it in the next iterations.
 
+`Iteration 4` - Created the docker-compose which includes the RabbitMQ Image and topology + new set up scripts
+
 ## Developing
 
 Requirements:
@@ -69,27 +71,19 @@ Requirements:
 ```
 
 ### Running
+You'll need docker-compose
 
-There are 2 options for running Anteus. You either need libsqlite3 or docker. Docker is easier but requires some docker knowledge. We do recommend docker though.
+For tests:
+        
+    ./script/test
 
+To run the application:
 
-*Running through docker*
+    ./script/server
 
-Install docker for your platform
+And once you are done:
 
-```
-make docker-run
-```
-
-*Running Natively*
-
-Native java with sqlite (requires libsqlite3):
-
-If you use homebrew on MacOS `brew install sqlite`.
-
-```
-./gradlew run
-```
+    ./script/down
 
 
 ### App Structure
