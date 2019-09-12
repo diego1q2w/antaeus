@@ -15,11 +15,13 @@ class BillingService(
         private val logger = KotlinLogging.logger {}
     }
 
+    // This will be executed every first day of the month, It will look for every PENDING payment
     fun schedulePayments() {
         val num = dal.schedulePendingInvoices()
         logger.info { "$num payments scheduled" }
     }
 
+    // This will be executed repeatedly every few seconds or minutes, It will look for every SCHEDULED payment.
     fun processPayments() {
         dal.fetchScheduledInvoices(10).forEach {
             if (dal.markInvoiceAsProcessing(it) == 1) {
@@ -29,7 +31,6 @@ class BillingService(
     }
 
     private fun publishProcessEvent(invoice: Invoice) {
-        println(invoice)
         bus.publish("${invoice.id}")
     }
 }
