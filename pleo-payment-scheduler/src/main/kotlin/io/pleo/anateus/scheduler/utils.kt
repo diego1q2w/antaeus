@@ -1,4 +1,5 @@
 
+import io.pleo.anateus.scheduler.app.external.Bus
 import io.pleo.anateus.scheduler.app.external.PaymentProvider
 import io.pleo.anateus.scheduler.domain.Currency
 import io.pleo.anateus.scheduler.domain.Invoice
@@ -35,6 +36,13 @@ internal fun getPaymentProvider(): PaymentProvider {
     return object : PaymentProvider {
         override fun charge(invoice: Invoice): Boolean {
                 return Random.nextBoolean()
+        }
+    }
+}
+
+internal fun mockBus(): Bus {
+    return object : Bus {
+        override fun publish(message: String) {
         }
     }
 }

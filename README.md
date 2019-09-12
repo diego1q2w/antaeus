@@ -53,7 +53,9 @@ TODO: Update the App Structure
 ### Iterations
 `Iteration 1` - I did the app refactor, no logic changed. I just made sure everything still works as it was. This is perhaps, the largest commit this project will have.
 
-`Iteration 2` - Added the payment scheduler, which marks the invoices as "Ready to process" (every month), is worth noticing that this step does not execute the payment.
+`Iteration 2` - Added the payment scheduler, which marks the invoices as "Ready to process" (every month), is worth noticing that this step does not execute the payment only mark it as `scheduled`.
+
+`Iteration 3` - The payments processor was added, It will fetch all the payments marked as `scheduled`, then mark them as `processing` and finally publish a message to the bus (Mocked for now). This event will in future iterations be consumed by the scheduler micro-service to finally commit the payment. Why I am doing this? I will explain it in the next iterations.
 
 ## Developing
 

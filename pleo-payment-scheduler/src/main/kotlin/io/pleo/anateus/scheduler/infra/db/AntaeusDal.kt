@@ -39,6 +39,23 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
+    fun markInvoiceAsProcessing(invoice: Invoice): Int {
+        return transaction(db) {
+            InvoiceTable.update({InvoiceTable.id.eq(invoice.id)}) {
+                it[status] = InvoiceStatus.PROCESSING.toString()
+            }
+        }
+    }
+
+    fun fetchScheduledInvoices(limit: Int): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                    .select{ InvoiceTable.status.eq(InvoiceStatus.SCHEDULED.toString()) }
+                    .limit(limit)
+                    .map { it.toInvoice() }
+        }
+    }
+
     fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING): Invoice? {
         val id = transaction(db) {
             // Insert the invoice and returns its new id.

@@ -15,6 +15,7 @@ import io.pleo.anateus.scheduler.delivery.AntaeusRest
 import io.pleo.anateus.scheduler.infra.db.AntaeusDal
 import io.pleo.anateus.scheduler.infra.db.CustomerTable
 import io.pleo.anateus.scheduler.infra.db.InvoiceTable
+import mockBus
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -51,12 +52,15 @@ fun main() {
     // Get third parties
     val paymentProvider = getPaymentProvider()
 
+    //Set up bus
+    val bus = mockBus()
+
     // Create core services
     val invoiceService = InvoiceService(dal = dal)
     val customerService = CustomerService(dal = dal)
 
     // This is _your_ billing service to be included where you see fit
-    val billingService = BillingService(paymentProvider = paymentProvider, dal = dal)
+    val billingService = BillingService(paymentProvider = paymentProvider, dal = dal, bus = bus)
 
     billingService.schedulePayments()
 
