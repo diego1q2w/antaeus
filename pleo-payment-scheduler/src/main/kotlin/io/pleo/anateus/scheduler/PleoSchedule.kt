@@ -13,8 +13,8 @@ import io.pleo.anateus.scheduler.app.services.CustomerService
 import io.pleo.anateus.scheduler.app.services.InvoiceService
 import io.pleo.anateus.scheduler.delivery.AntaeusRest
 import io.pleo.anateus.scheduler.infra.db.AntaeusDal
-import io.pleo.antaeus.data.CustomerTable
-import io.pleo.antaeus.data.InvoiceTable
+import io.pleo.anateus.scheduler.infra.db.CustomerTable
+import io.pleo.anateus.scheduler.infra.db.InvoiceTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger

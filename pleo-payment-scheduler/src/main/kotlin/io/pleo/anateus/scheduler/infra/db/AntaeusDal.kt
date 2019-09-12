@@ -8,12 +8,7 @@
 package io.pleo.anateus.scheduler.infra.db
 
 import io.pleo.anateus.scheduler.domain.*
-import io.pleo.antaeus.data.CustomerTable
-import io.pleo.antaeus.data.InvoiceTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class AntaeusDal(private val db: Database) {
@@ -33,6 +28,16 @@ class AntaeusDal(private val db: Database) {
             InvoiceTable
                 .selectAll()
                 .map { it.toInvoice() }
+        }
+    }
+
+    fun fetchPendingInvoices(limit: Int, lastID: Int = 0): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                    .select{ InvoiceTable.status.eq(InvoiceStatus.PENDING.toString()) and InvoiceTable.id.greater(lastID) }
+                    .orderBy(InvoiceTable.id, true)
+                    .limit(limit)
+                    .map { it.toInvoice() }
         }
     }
 

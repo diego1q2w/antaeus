@@ -3,7 +3,7 @@
     To be used by `AntaeusDal`.
  */
 
-package io.pleo.antaeus.data
+package io.pleo.anateus.scheduler.infra.db
 
 import org.jetbrains.exposed.sql.Table
 

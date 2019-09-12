@@ -6,8 +6,6 @@
 package io.pleo.anateus.scheduler.infra.db
 
 import io.pleo.anateus.scheduler.domain.*
-import io.pleo.antaeus.data.CustomerTable
-import io.pleo.antaeus.data.InvoiceTable
 import org.jetbrains.exposed.sql.ResultRow
 
 fun ResultRow.toInvoice(): Invoice = Invoice(
