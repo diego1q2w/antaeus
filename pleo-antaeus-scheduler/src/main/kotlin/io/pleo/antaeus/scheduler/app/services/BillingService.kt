@@ -36,9 +36,8 @@ class BillingService(
     }
 
     private fun publishProcessEvent(invoice: Invoice) {
-        val timestamp = now().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()
-        val event = InvoiceScheduledEvent(invoiceID = invoice.id, timestamp = timestamp)
-
-        bus.publishMessage(event)
+        now().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli().let {
+            InvoiceScheduledEvent(invoiceID = invoice.id, timestamp = it)
+        }.let(bus::publishMessage)
     }
 }

@@ -3,7 +3,6 @@ package io.pleo.antaeus.rabbitmq
 import com.rabbitmq.client.AMQP
 import com.rabbitmq.client.Connection
 import com.rabbitmq.client.ConnectionFactory
-import com.rabbitmq.client.Delivery
 import com.viartemev.thewhiterabbit.channel.channel
 import com.viartemev.thewhiterabbit.channel.confirmChannel
 import com.viartemev.thewhiterabbit.channel.consume
@@ -12,11 +11,9 @@ import com.viartemev.thewhiterabbit.publisher.OutboundMessage
 import kotlinx.coroutines.*
 import java.lang.Exception
 
-typealias handler = suspend (Delivery) -> Unit
-
 class Bus(private val prefetchSize: Int = 10) {
-    private lateinit var connection: Connection
-    private var handlers = mutableMapOf<String, handler >()
+    private var connection: Connection
+    private var handlers = mutableMapOf<String, pleoHandler >()
     private var isRunning = false
 
     init {
@@ -30,7 +27,7 @@ class Bus(private val prefetchSize: Int = 10) {
         return connection.isOpen
     }
 
-    fun registerHandler(bucket: String, topic: String, handler: handler) {
+    fun registerHandler(bucket: String, topic: String, handler: pleoHandler) {
         handlers["$bucket:$topic"] = handler
     }
 
@@ -45,7 +42,7 @@ class Bus(private val prefetchSize: Int = 10) {
                 connection.channel {
                     val handler = it.value
                     consume(it.key, prefetchSize) {
-                        consumeMessageWithConfirm(handler)
+                        consumeMessageWithConfirm(NewHandler(handler))
                     }
                 }
             }
@@ -56,8 +53,14 @@ class Bus(private val prefetchSize: Int = 10) {
         runBlocking {
             connection.confirmChannel {
                 publish {
-                    val message = OutboundMessage(exchange = "bus", routingKey = event.topic(), msg = event.toJSON(), properties = AMQP.BasicProperties())
-                    publishWithConfirm(message)
+                    OutboundMessage(
+                            exchange = "bus",
+                            routingKey = event.topic(),
+                            msg = event.toJSON(),
+                            properties = AMQP.BasicProperties()
+                    ).let {
+                        publishWithConfirm(it)
+                    }
                 }
             }
         }
