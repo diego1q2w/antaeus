@@ -52,11 +52,11 @@ class Bus(private val prefetchSize: Int = 10) {
         }
     }
 
-    fun publishMessage(topic: String, msg: String) {
+    fun publishMessage(event: Event) {
         runBlocking {
             connection.confirmChannel {
                 publish {
-                    val message = OutboundMessage(exchange = "bus", routingKey = topic, msg = msg, properties = AMQP.BasicProperties())
+                    val message = OutboundMessage(exchange = "bus", routingKey = event.topic(), msg = event.toJSON(), properties = AMQP.BasicProperties())
                     publishWithConfirm(message)
                 }
             }

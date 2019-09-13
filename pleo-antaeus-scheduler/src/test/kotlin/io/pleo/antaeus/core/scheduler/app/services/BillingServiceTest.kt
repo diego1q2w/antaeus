@@ -4,10 +4,7 @@ import io.mockk.*
 import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.app.services.BillingService
-import io.pleo.antaeus.scheduler.domain.Currency
-import io.pleo.antaeus.scheduler.domain.Invoice
-import io.pleo.antaeus.scheduler.domain.InvoiceStatus
-import io.pleo.antaeus.scheduler.domain.Money
+import io.pleo.antaeus.scheduler.domain.*
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import org.junit.jupiter.api.Test
 
@@ -33,7 +30,7 @@ class BillingServiceTest {
     }
 
     private val bus = mockk<Bus> {
-        every { publishMessage(any(), any()) } returns Unit
+        every { publishMessage(any()) } returns Unit
     }
 
     private val now = fun (): LocalDateTime {
@@ -49,8 +46,8 @@ class BillingServiceTest {
         billingServiceService.processPayments()
 
         verifySequence {
-            bus.publishMessage("InvoiceScheduledEvent", """{"invoiceID":1,"timestamp":955197000000}""")
-            bus.publishMessage("InvoiceScheduledEvent", """{"invoiceID":3,"timestamp":955197000000}""")
+            bus.publishMessage(InvoiceScheduledEvent(1, 955197000000))
+            bus.publishMessage(InvoiceScheduledEvent(3, 955197000000))
         }
 
         confirmVerified(bus)

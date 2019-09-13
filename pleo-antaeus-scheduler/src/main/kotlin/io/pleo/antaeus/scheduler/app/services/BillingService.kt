@@ -5,8 +5,6 @@ import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.domain.Invoice
 import io.pleo.antaeus.scheduler.domain.InvoiceScheduledEvent
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import mu.KotlinLogging
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -40,9 +38,7 @@ class BillingService(
     private fun publishProcessEvent(invoice: Invoice) {
         val timestamp = now().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()
         val event = InvoiceScheduledEvent(invoiceID = invoice.id, timestamp = timestamp)
-        val json = Json(JsonConfiguration.Stable)
-        val jsonData = json.stringify(InvoiceScheduledEvent.serializer(), event)
 
-        bus.publishMessage(topic = InvoiceScheduledEvent::class.simpleName!!, msg = jsonData)
+        bus.publishMessage(event)
     }
 }
