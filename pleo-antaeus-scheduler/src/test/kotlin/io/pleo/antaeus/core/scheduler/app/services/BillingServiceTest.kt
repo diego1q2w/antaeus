@@ -49,8 +49,8 @@ class BillingServiceTest {
         billingServiceService.processPayments()
 
         verifySequence {
-            bus.publishMessage("PaymentScheduledEvent", """{"invoiceID":1,"timestamp":955197000000}""")
-            bus.publishMessage("PaymentScheduledEvent", """{"invoiceID":3,"timestamp":955197000000}""")
+            bus.publishMessage("InvoiceScheduledEvent", """{"invoiceID":1,"timestamp":955197000000}""")
+            bus.publishMessage("InvoiceScheduledEvent", """{"invoiceID":3,"timestamp":955197000000}""")
         }
 
         confirmVerified(bus)

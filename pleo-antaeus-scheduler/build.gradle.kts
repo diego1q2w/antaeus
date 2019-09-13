@@ -9,7 +9,7 @@ kotlinProject()
 dataLibs()
 
 application {
-    mainClassName = "io.pleo.anateus.scheduler.PleoSchedule"
+    mainClassName = "io.pleo.antaeus.scheduler.PleoSchedule"
 }
 
 dependencies {

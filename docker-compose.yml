@@ -12,7 +12,7 @@ services:
       - build-cache:/root/.gradle
       - .:/app
     environment:
-      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672
       WAIT_FOR_PORTS: rabbitmq:5672
 
   rabbitmq:
@@ -27,7 +27,7 @@ services:
     depends_on:
       - rabbitmq
     volumes:
-      - ./pleo-payment-scheduler/src/main/resources/topology:/setup-events-topology/topology
+      - ./pleo-antaeus-scheduler/src/main/resources/topology:/setup-events-topology/topology
     environment:
       RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
       SERVICE_NAME: scheduler # This is the group name of consumers or buckets

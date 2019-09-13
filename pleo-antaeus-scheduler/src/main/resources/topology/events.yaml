@@ -1,0 +1,6 @@
+consume:
+  rabbitmq:
+    - name: InvoiceScheduledEvent
+      durable: True
+      dlx: True
+      expires: 1d

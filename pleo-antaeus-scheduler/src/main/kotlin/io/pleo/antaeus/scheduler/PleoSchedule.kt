@@ -23,6 +23,7 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.Connection
 import java.time.LocalDateTime
+import kotlin.concurrent.fixedRateTimer
 
 fun main() {
     // The tables to create in the database.
@@ -67,6 +68,11 @@ fun main() {
     )
 
     billingService.schedulePayments()
+
+    // Process pending payments every 5 minutes
+    fixedRateTimer("processPayments", true, 2000L, 5000){
+        billingService.processPayments()
+    }
 
     // Create REST web service
     AntaeusRest(
