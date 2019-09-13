@@ -1,3 +1,6 @@
 rootProject.name = "antaeus"
 
-include("pleo-payment-scheduler")
+include(
+        ":pleo-bus",
+        ":pleo-antaeus-scheduler"
+)

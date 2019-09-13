@@ -23,14 +23,14 @@ services:
       driver: none
 
   rabbitmq-scheduler-topology:
-    image: diego1q2w/setup-events-topology:latest
+    image: diego1q2w/setup-events-topology
     depends_on:
       - rabbitmq
     volumes:
       - ./pleo-payment-scheduler/src/main/resources/topology:/setup-events-topology/topology
     environment:
       RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
-      SERVICE_NAME: scheduler
+      SERVICE_NAME: scheduler # This is the group name of consumers or buckets
       WAIT_FOR_PORTS: rabbitmq:5672
 
 volumes:

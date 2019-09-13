@@ -1,6 +1,0 @@
-consume:
-  rabbitmq:
-    - name: PaymentScheduledEvent
-      durable: True
-      dlx: True
-      expires: 1d

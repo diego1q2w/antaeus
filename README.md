@@ -57,18 +57,15 @@ TODO: Update the App Structure
 
 `Iteration 3` - The payments processor was added, It will fetch all the payments marked as `scheduled`, then mark them as `processing` and finally publish a message to the bus (Mocked for now). This event will in future iterations be consumed by the scheduler micro-service to finally commit the payment. Why I am doing this? I will explain it in the next iterations.
 
-`Iteration 4` - Created the docker-compose which includes the RabbitMQ Image and topology + new set up scripts
+`Iteration 4` - Created the docker-compose which includes the RabbitMQ Image and topology + new set up scripts. The topology that `setup-events-topology` image creates, emulates the topic-service of Kafka where separate consumer groups are completely independent, so they all see all messages. To understand what I mean go to `localhost:15672` user and pasword: `guest` and then go to queues
 
 ## Developing
 
 Requirements:
 - \>= Java 11 environment
 
-### Building
-
-```
-./gradlew build
-```
+RabbitMQ Management Tool:
+ `localhost:15672` user - `guest` password - `guest`.
 
 ### Running
 You'll need docker-compose
