@@ -9,14 +9,19 @@ import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.pleo.antaeus.scheduler.app.exceptions.EntityNotFoundException
 import io.pleo.antaeus.scheduler.app.services.CustomerService
+import io.pleo.antaeus.scheduler.app.services.HealthCheckService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
 import mu.KotlinLogging
+import org.eclipse.jetty.client.HttpContent
+import org.eclipse.jetty.http.HttpStatus
+import org.eclipse.jetty.websocket.api.StatusCode
 
 private val logger = KotlinLogging.logger {}
 
 class AntaeusRest (
         private val invoiceService: InvoiceService,
-        private val customerService: CustomerService
+        private val customerService: CustomerService,
+        private val healthCheckService: HealthCheckService
 ) : Runnable {
 
     override fun run() {
@@ -46,7 +51,9 @@ class AntaeusRest (
                // Route to check whether the app is running
                // URL: /rest/health
                get("health") {
-                   it.json("ok")
+                   val (isHealthy, body) = healthCheckService.isHealthy()
+                   it.status(if (isHealthy) HttpStatus.OK_200 else HttpStatus.INTERNAL_SERVER_ERROR_500)
+                   it.json(body)
                }
 
                // V1

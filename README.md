@@ -66,6 +66,8 @@ TODO: Update the App Structure
 `Iteration 7` - I managed to enable the Dead-Letter queue, so now the whole process of `commit payment` is transactional.
 
 `Iteration 8` - Added the `InvoiceScheduledEvent` handler which ultimately commits the payment.
+
+`Iteration 9` - Added the health check service for the bus.
 ## Developing
 
 Requirements:

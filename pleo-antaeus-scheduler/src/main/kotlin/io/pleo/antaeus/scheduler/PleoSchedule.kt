@@ -10,6 +10,7 @@ package io.pleo.antaeus.scheduler
 import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.app.services.CustomerService
+import io.pleo.antaeus.scheduler.app.services.HealthCheckService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
 import io.pleo.antaeus.scheduler.delivery.bus.invoiceScheduledHandler
 import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
@@ -27,6 +28,9 @@ import java.time.LocalDateTime
 import kotlin.concurrent.fixedRateTimer
 
 fun main() {
+    //TODO: move it to an env var
+    val serviceName = "scheduler"
+
     // The tables to create in the database.
     val tables = arrayOf(InvoiceTable, CustomerTable)
 
@@ -65,13 +69,13 @@ fun main() {
             paymentProvider = paymentProvider,
             dal = dal,
             bus = bus,
-            now = {LocalDateTime.now()}
+            now = LocalDateTime::now
     )
 
     billingService.schedulePayments()
 
-    //Bus handlers
-    bus.registerHandler("scheduler", "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
+    // Bus handlers
+    bus.registerHandler(serviceName, "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
 
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){
@@ -81,9 +85,15 @@ fun main() {
     // Run the bus handlers async
     bus.run()
 
+    // Set up the health check
+    val healthCheckService = HealthCheckService()
+
+    healthCheckService.addHealthCheck("bus", bus::isHealthy)
+
     // Create REST web service
     AntaeusRest(
             invoiceService = invoiceService,
-            customerService = customerService
+            customerService = customerService,
+            healthCheckService = healthCheckService
     ).run()
 }
