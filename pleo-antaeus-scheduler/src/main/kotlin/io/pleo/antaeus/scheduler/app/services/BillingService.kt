@@ -11,6 +11,7 @@ import io.pleo.antaeus.scheduler.domain.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.scheduler.domain.InvoicePayCommitSucceedEvent
 import io.pleo.antaeus.scheduler.domain.InvoiceScheduledEvent
 import mu.KotlinLogging
+import java.lang.Exception
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -49,20 +50,16 @@ class BillingService(
             paymentProvider.charge(invoice).let {
                 if(it) successPayment(invoice) else failedPayment(invoice, "account balance did not allow the charge")
             }
-        } catch (e: CustomerNotFoundException) {
-            // this should ideally trigger some sort of notification in slack or somewhere else
-            logger.warn { "unable to commit payment: ${e.message}" }
-        } catch (e: CurrencyMismatchException) {
-            // this should ideally trigger some sort of notification in slack or somewhere else
-            logger.warn { "unable to commit payment: ${e.message}" }
-        } catch (e: InvoiceNotFoundException) {
-            // this should ideally trigger some sort of notification in slack or somewhere else
-            logger.warn { "unable to commit payment: ${e.message}" }
         } catch (e: Exception) {
-            // This includes the NetworkException: in theory, this should not be handled so the
-            // message goes to the Dead-Letter for retry, unfortunately the RabbitMQ library I am using does not support Nack.
-            // TODO: Enable DLX
-            logger.error { "unable to commit payment: ${e.message}" }
+            when(e) {
+                // this should ideally trigger some sort of notification in slack or somewhere else
+                is CustomerNotFoundException -> logger.warn { "unable to commit payment: ${e.message}" }
+                is CurrencyMismatchException -> logger.warn { "unable to commit payment: ${e.message}" }
+                is InvoiceNotFoundException -> logger.warn { "unable to commit payment: ${e.message}" }
+                // Any other exception including the NetworkException will cause message rejection
+                // which ultimately will send the message to the Dead-Letter queue
+                else -> throw e
+            }
         }
     }
 

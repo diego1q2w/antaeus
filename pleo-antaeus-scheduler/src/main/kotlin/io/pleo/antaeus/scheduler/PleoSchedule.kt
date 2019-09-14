@@ -11,6 +11,7 @@ import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.app.services.CustomerService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
+import io.pleo.antaeus.scheduler.delivery.bus.invoiceScheduledHandler
 import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.infra.db.CustomerTable
@@ -69,10 +70,16 @@ fun main() {
 
     billingService.schedulePayments()
 
+    //Bus handlers
+    bus.registerHandler("scheduler", "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
+
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){
         billingService.processPayments()
     }
+
+    // Run the bus handlers async
+    bus.run()
 
     // Create REST web service
     AntaeusRest(
