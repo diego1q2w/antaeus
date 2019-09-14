@@ -3,6 +3,7 @@
 package io.pleo.antaeus.retrier
 
 import io.pleo.antaeus.rabbitmq.Bus
+import io.pleo.antaeus.retrier.payment.app.services.HealthCheckService
 import io.pleo.antaeus.retrier.payment.app.services.PaymentService
 import io.pleo.antaeus.retrier.payment.delivery.bus.invoicePayCommitFailedHandler
 import io.pleo.antaeus.retrier.payment.delivery.bus.invoicePayCommitSucceedHandler
@@ -40,5 +41,9 @@ fun main() {
     bus.registerHandler("retrier", "InvoicePayCommitSucceedEvent", invoicePayCommitSucceedHandler(paymentService))
 
     bus.run()
-    AntaeusRest().run()
+
+    val healthCheckService = HealthCheckService()
+    healthCheckService.addHealthCheck("bus", bus::isHealthy)
+
+    AntaeusRest(healthCheckService = healthCheckService).run()
 }

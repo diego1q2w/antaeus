@@ -75,6 +75,7 @@ TODO: Update the App Structure
 
 `Iteration 12` - Added the payment logic using `EvenSourcing` so we get the latest state of the PaymentInvoice upon which we are going to decide if is worth retrying.
 
+`Iteration 13` - Wire up the retryer service, it emits 2 events `InvoicePayRetryApproved` and `InvoicePayRetryDisApproved`. Which will be used to either retry the payment or mark it as failed. The `InvoicePayRetryDisApproved` will be used for the notification domain as well.
 
 ## Developing
 

@@ -3,11 +3,15 @@ package io.pleo.antaeus.retrier.payment.delivery.http
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
+import io.pleo.antaeus.retrier.payment.app.services.HealthCheckService
 import mu.KotlinLogging
+import org.eclipse.jetty.http.HttpStatus
 
 private val logger = KotlinLogging.logger {}
 
-class AntaeusRest () : Runnable {
+class AntaeusRest (
+        private val healthCheckService: HealthCheckService
+) : Runnable {
     override fun run() {
         app.start(7000)
     }
@@ -31,7 +35,9 @@ class AntaeusRest () : Runnable {
                // Route to check whether the app is running
                // URL: /rest/health
                get("health") {
-                   it.json("ok")
+                   val (isHealthy, body) = healthCheckService.isHealthy()
+                   it.status(if (isHealthy) HttpStatus.OK_200 else HttpStatus.INTERNAL_SERVER_ERROR_500)
+                   it.json(body)
                }
            }
         }
