@@ -68,6 +68,8 @@ TODO: Update the App Structure
 `Iteration 8` - Added the `InvoiceScheduledEvent` handler which ultimately commits the payment.
 
 `Iteration 9` - Added the health check service for the bus.
+
+`Iteration 10` - Added the `MontlyEvent` which emulates "that" external factor that starts the process (every 1st of each month).
 ## Developing
 
 Requirements:

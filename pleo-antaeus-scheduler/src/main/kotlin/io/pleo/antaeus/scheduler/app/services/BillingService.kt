@@ -27,15 +27,32 @@ class BillingService(
         private val logger = KotlinLogging.logger {}
     }
 
-    // This will be executed every first day of the month, It will look for every PENDING payment
+    /*
+    * "schedulePayments" method is meant to be fast it will only mark all "PENDING" invoices as "SCHEDULED"
+    * It's another process job to handle them "processPayments"
+    * After this, any other invoice that comes after or during the process will have to wait until the next month.
+    * */
     fun schedulePayments() {
         dal.schedulePendingInvoices().let {
             logger.info { "$it payments scheduled" }
         }
     }
 
-    // This will be executed repeatedly every few seconds or minutes, It will look for every SCHEDULED payment.
+    /*
+    * This will be executed repeatedly every few seconds or minutes, It will look for every SCHEDULED payment.
+    * And its only task is to publish an event per invoice and then mark it as PROCESSING.
+    * It process payments per baches.
+    *
+    * It's time to talk about the elephant in the room. Why the nerve of publishing an event per invoice?
+    * This achieve two things:
+    *   1- The schedule payments task is fast and thus, less error-prone.
+    *   2- Having events, enable transactionality, if there is a network error in either the DB or the payment provider, the event
+    *       gets send to the DLX for a potential retry. Since it wasn't users fault we can try to execute the payment we can rerun the event.
+    *       If the server gets shutdown or the db becomes unreachable, we won't loose those payments and as soon everything gets back to normality.
+    *       We will process every payment from the last successful event.
+    */
     fun processPayments() {
+        //TODO: Create an app configuration
         dal.fetchScheduledInvoices(10).forEach {
             if (dal.markInvoiceAsProcessing(it) == 1) {
                 publishProcessEvent(invoice = it)
@@ -43,6 +60,10 @@ class BillingService(
         }
     }
 
+    /*
+    * This will commit the payment and if succeed will publish either an `InvoicePayCommitSucceedEvent`
+    * or `InvoicePayCommitFailedEvent` or nothing in case of an exception happen, that will potentially send the event to DLX for retrial
+    * */
     fun commitPayment(invoiceId: Int) {
         try {
             val invoice = dal.fetchInvoice(invoiceId)?: throw InvoiceNotFoundException(invoiceId)

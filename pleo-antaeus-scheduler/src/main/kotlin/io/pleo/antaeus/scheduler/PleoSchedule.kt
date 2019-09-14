@@ -13,6 +13,7 @@ import io.pleo.antaeus.scheduler.app.services.CustomerService
 import io.pleo.antaeus.scheduler.app.services.HealthCheckService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
 import io.pleo.antaeus.scheduler.delivery.bus.invoiceScheduledHandler
+import io.pleo.antaeus.scheduler.delivery.bus.monthlyHandler
 import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.infra.db.CustomerTable
@@ -72,10 +73,9 @@ fun main() {
             now = LocalDateTime::now
     )
 
-    billingService.schedulePayments()
-
     // Bus handlers
     bus.registerHandler(serviceName, "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
+    bus.registerHandler(serviceName, "MonthlyEvent", monthlyHandler(billingService))
 
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){

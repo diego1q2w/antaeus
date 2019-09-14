@@ -4,3 +4,7 @@ consume:
       durable: True
       dlx: True
       expires: 1d
+    - name: MonthlyEvent
+      durable: True
+      dlx: True
+      expires: 1d
