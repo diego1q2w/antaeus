@@ -1,4 +1,4 @@
-package io.pleo.antaeus.retrier.delivery.http
+package io.pleo.antaeus.retrier.payment.delivery.http
 
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get

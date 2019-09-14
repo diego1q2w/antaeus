@@ -2,7 +2,7 @@
 
 package io.pleo.antaeus.retrier
 
-import io.pleo.antaeus.retrier.delivery.http.AntaeusRest
+import io.pleo.antaeus.retrier.payment.delivery.http.AntaeusRest
 
 fun main() {
     AntaeusRest().run()
