@@ -15,18 +15,10 @@ class PaymentService(
 ) {
 
     fun paymentEvent(cmd: PayEvent) {
-        val payment = Payment(dal.fetchEvents(cmd.invoiceID))
+        val payment = dal.fetchEvents(cmd.invoiceID)
         payment.add(cmd)
 
-        dal.addEvent(cmd)
-        retry(payment, cmd.invoiceID)
-    }
-
-    fun paymentEvent(cmd: InvoicePayCommitFailedEvent) {
-        val payment = Payment(dal.fetchEvents(cmd.invoiceID))
-        payment.add(cmd)
-
-        dal.addEvent(cmd)
+        dal.persistChanges(payment)
         retry(payment, cmd.invoiceID)
     }
 

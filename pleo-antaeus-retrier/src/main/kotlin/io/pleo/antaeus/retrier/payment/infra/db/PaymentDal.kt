@@ -3,6 +3,7 @@ package io.pleo.antaeus.retrier.payment.infra.db
 import io.pleo.antaeus.retrier.payment.domain.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.retrier.payment.domain.InvoicePayCommitSucceedEvent
 import io.pleo.antaeus.retrier.payment.domain.PayEvent
+import io.pleo.antaeus.retrier.payment.domain.Payment
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import org.jetbrains.exposed.sql.*
@@ -11,13 +12,19 @@ import io.pleo.antaeus.retrier.payment.infra.db.exceptions.UnknownTypeException
 
 class PaymentDal(private val db: Database) {
 
-    fun fetchEvents(invoiceId: Int): List<PayEvent> = transaction(db) {
-        EventTable
-                .select { EventTable.invoiceId eq invoiceId }
-                .map { it.toEvent() }
+    fun fetchEvents(invoiceId: Int): Payment {
+        transaction(db) {
+            EventTable
+                    .select { EventTable.invoiceId eq invoiceId }
+                    .map { it.toEvent() }
+        }.let {
+            return Payment(it)
+        }
     }
 
-    fun addEvent(event: PayEvent): Int? {
+    fun persistChanges(payment: Payment): Unit = payment.difference().forEach {addEvent(it)}
+
+    private fun addEvent(event: PayEvent): Int {
         val eventJson = when(event) {
             is InvoicePayCommitSucceedEvent ->
                 Json(JsonConfiguration.Stable).stringify(InvoicePayCommitSucceedEvent.serializer(), event)
@@ -26,7 +33,7 @@ class PaymentDal(private val db: Database) {
             else -> throw UnknownTypeException(event::class.simpleName!!)
         }
 
-        return addEvent(event, eventJson)
+        return addEvent(event, eventJson) ?: 0
     }
 
     private fun addEvent(event: PayEvent, eventJson: String): Int? = transaction(db) {

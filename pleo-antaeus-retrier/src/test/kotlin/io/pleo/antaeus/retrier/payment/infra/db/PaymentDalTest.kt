@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.sql.Connection
 
@@ -27,22 +27,19 @@ class PaymentDalTest {
     private val dal = PaymentDal(db)
 
     @Test
-    fun `should get the correct events`() {
-        listOf<PayEvent>(
-                InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 123, reason = "foo"),
-                InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12),
-                InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = "bar")
-        ).forEach {
-            when(it) {
-                is InvoicePayCommitFailedEvent -> dal.addEvent(it)
-                is InvoicePayCommitSucceedEvent -> dal.addEvent(it)
-            }
-        }
+    fun `should only persist the payments difference`() {
+        val pay = Payment(listOf<PayEvent>(InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 123, reason = "foo")))
+
+        pay.add(InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12))
+        pay.add(InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 12345, reason = "bar"))
+
+        dal.persistChanges(pay)
 
         val expectedPayments = listOf(
-                InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 123, reason = "foo"),
-                InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12))
+                InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12),
+                InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 12345, reason = "bar")
+        )
 
-        Assertions.assertEquals(expectedPayments, dal.fetchEvents(1))
+        assertEquals(expectedPayments, dal.fetchEvents(1).initialSet())
     }
 }

@@ -35,8 +35,12 @@ class Payment(private val initEvents: List<PayEvent>) {
         return initEvents.size + newEvents.size
     }
 
-    fun difference(): MutableList<PayEvent> {
+    fun difference(): List<PayEvent> {
         return newEvents
+    }
+
+    fun initialSet(): List<PayEvent> {
+        return initEvents
     }
 
     fun finalStatus(): Status? {
