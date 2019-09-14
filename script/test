@@ -1,4 +1,5 @@
 #!/bin/bash
 set -e
 
+# Will run all the test at once, we don't care which container uses since we are only running unit tests.
 docker-compose run --rm scheduler wait-for-ports ./gradlew test --info

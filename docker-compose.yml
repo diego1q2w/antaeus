@@ -9,11 +9,28 @@ services:
     ports:
       - "7000:7000"
     volumes:
-      - build-cache:/root/.gradle
+      - build-scheduler-cache:/root/.gradle
       - .:/app
+      - /app/.gradle
     environment:
       RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672
       WAIT_FOR_PORTS: rabbitmq:5672
+    command: bash -c "wait-for-ports ./gradlew :pleo-antaeus-scheduler:build && ./gradlew :pleo-antaeus-scheduler:run"
+
+  retrier:
+    image: diego1q2w/jdk-11-sqlite-alpine
+    depends_on:
+      - rabbitmq
+    ports:
+      - "7001:7000"
+    volumes:
+      - build-retrier-cache:/root/.gradle
+      - .:/app
+      - /app/.gradle
+    environment:
+      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672
+      WAIT_FOR_PORTS: rabbitmq:5672
+    command: bash -c "wait-for-ports ./gradlew :pleo-antaeus-retrier:build && ./gradlew :pleo-antaeus-retrier:run"
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -34,4 +51,5 @@ services:
       WAIT_FOR_PORTS: rabbitmq:5672
 
 volumes:
-  build-cache:
+  build-scheduler-cache:
+  build-retrier-cache:

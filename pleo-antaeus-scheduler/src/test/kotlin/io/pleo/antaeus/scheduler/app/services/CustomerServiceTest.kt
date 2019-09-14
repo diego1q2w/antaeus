@@ -1,4 +1,4 @@
-package io.pleo.antaeus.core.scheduler.app.services
+package io.pleo.antaeus.scheduler.app.services
 
 import io.mockk.every
 import io.mockk.mockk

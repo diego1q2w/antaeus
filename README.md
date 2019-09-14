@@ -70,6 +70,9 @@ TODO: Update the App Structure
 `Iteration 9` - Added the health check service for the bus.
 
 `Iteration 10` - Added the `MontlyEvent` which emulates "that" external factor that starts the process (every 1st of each month).
+
+`Iteration 11` - Added the `pleo-antaeus-retrier` service which will run in an independent container. It will communicate with the `pleo-antaeus-scheduler` via RabbitMQ events.
+
 ## Developing
 
 Requirements:
