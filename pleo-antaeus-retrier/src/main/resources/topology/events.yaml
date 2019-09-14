@@ -1,10 +1,10 @@
 consume:
   rabbitmq:
-    - name: InvoiceScheduledEvent
+    - name: InvoicePayCommitFailedEvent
       durable: True
       dlx: True
       expires: 1d
-    - name: MonthlyEvent
+    - name: InvoicePayCommitSucceedEvent
       durable: True
       dlx: True
       expires: 1d

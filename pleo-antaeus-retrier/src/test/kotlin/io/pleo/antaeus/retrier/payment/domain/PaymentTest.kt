@@ -12,7 +12,7 @@ class PaymentTest {
                 InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = "")
         ))
 
-        assertEquals(PaymentStatus(invoiceId = 4, timestamp = 12345, status = Status.FAILED), payment.finalStatus())
+        assertEquals(Status.FAILED, payment.finalStatus())
         assertEquals(3, payment.totalChanges())
         assertEquals(mutableListOf<PayEvent>(), payment.difference())
     }
@@ -28,7 +28,7 @@ class PaymentTest {
         payment.add(InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333))
         payment.add(InvoicePayCommitSucceedEvent(invoiceID = 6, timestamp = 1))
 
-        assertEquals(PaymentStatus(invoiceId = 3, timestamp = 22333, status = Status.SUCCEED), payment.finalStatus())
+        assertEquals(Status.SUCCEED, payment.finalStatus())
         assertEquals(5, payment.totalChanges())
         assertEquals(mutableListOf<PayEvent>(
                 InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333),

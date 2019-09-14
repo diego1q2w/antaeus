@@ -39,7 +39,7 @@ class Payment(private val initEvents: List<PayEvent>) {
         return newEvents
     }
 
-    fun finalStatus(): PaymentStatus? {
-        return status
+    fun finalStatus(): Status? {
+        return status?.status
     }
 }
