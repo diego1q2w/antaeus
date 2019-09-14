@@ -2,7 +2,7 @@
     Configures the rest app along with basic exception handling and URL endpoints.
  */
 
-package io.pleo.antaeus.scheduler.delivery
+package io.pleo.antaeus.scheduler.delivery.http
 
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get

@@ -2,6 +2,7 @@ package io.pleo.antaeus.core.scheduler.app.services
 
 import io.mockk.*
 import io.pleo.antaeus.rabbitmq.Bus
+import io.pleo.antaeus.scheduler.app.exceptions.NetworkException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.domain.*
@@ -13,20 +14,31 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 class BillingServiceTest {
-    private val dal = mockk<AntaeusDal> {
-        val invoice1 = Invoice( id = 1, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
-        val invoice2 = Invoice( id = 2, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
-        val invoice3 = Invoice( id = 3, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
+    private val invoice1 = Invoice( id = 1, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
+    private val invoice2 = Invoice( id = 2, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
+    private val invoice3 = Invoice( id = 3, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
 
+
+    private val dal = mockk<AntaeusDal> {
         every { markInvoiceAsProcessing(invoice1)} returns 1
         every { markInvoiceAsProcessing(invoice2)} returns 0
         every { markInvoiceAsProcessing(invoice3)} returns 1
 
+        every { markInvoiceAsPaid(any())} returns 1
+        every { markInvoiceAsRetry(any())} returns 1
+
         every { fetchScheduledInvoices(any()) } returns listOf(invoice1, invoice2, invoice3)
+
+        every { fetchInvoice(1) } returns invoice1
+        every { fetchInvoice(2) } returns invoice2
+        every { fetchInvoice(3) } returns invoice3
+        every { fetchInvoice(4) } returns null
     }
 
     private val paymentProvider = mockk<PaymentProvider> {
-        every { charge(any()) } returns true
+        every { charge(invoice1) } returns true
+        every { charge(invoice2) } throws  NetworkException()
+        every { charge(invoice3) } returns false
     }
 
     private val bus = mockk<Bus> {
@@ -42,12 +54,45 @@ class BillingServiceTest {
     private val billingServiceService = BillingService(dal = dal, paymentProvider = paymentProvider, bus = bus, now=now)
 
     @Test
-    fun `should publish only the correct messages`() {
+    fun `should publish only deduplicated scheduled payments`() {
         billingServiceService.processPayments()
 
         verifySequence {
             bus.publishMessage(InvoiceScheduledEvent(1, 955197000000))
             bus.publishMessage(InvoiceScheduledEvent(3, 955197000000))
+        }
+
+        confirmVerified(bus)
+    }
+
+    @Test
+    fun `if the payment is successful should publish an event`() {
+        billingServiceService.commitPayment(1)
+
+        verifySequence {
+            bus.publishMessage(InvoicePayCommitSucceedEvent(1, 955197000000))
+        }
+
+        confirmVerified(bus)
+    }
+
+    @Test
+    fun `if the payment is not successful should publish an event`() {
+        billingServiceService.commitPayment(3)
+
+        verifySequence {
+            bus.publishMessage(InvoicePayCommitFailedEvent(3, 955197000000, "account balance did not allow the charge"))
+        }
+
+        confirmVerified(bus)
+    }
+
+    @Test
+    fun `if there is an error while processing nothing should happen`() {
+        billingServiceService.commitPayment(2)
+
+        verify {
+            bus wasNot Called
         }
 
         confirmVerified(bus)

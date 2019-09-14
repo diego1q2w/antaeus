@@ -11,7 +11,7 @@ import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.app.services.CustomerService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
-import io.pleo.antaeus.scheduler.delivery.AntaeusRest
+import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.infra.db.CustomerTable
 import io.pleo.antaeus.scheduler.infra.db.InvoiceTable

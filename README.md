@@ -61,6 +61,8 @@ TODO: Update the App Structure
 
 `Iteration 5` - Removed the mocked bus publisher and added the good one `pleo-bus`, for now, just publishing the topic `InvoiceScheduledEvent`.
 
+`Iteration 6` - Add the commit payment logic, most of the exceptions `CustomerNotFoundException`, `CurrencyMismatchException`, etc. Produce a log, that could be used as a notification, however, the `NetworkException` that also log something, should as well send the message to the DLX for future retrial, unfortunately the library I am using does not support that. So, that would be a future improvement. If there are no data nor infra issues an event is created for both cases `InvoicePayCommitSucceedEvent = yeeey` and `InvoicePayCommitFailedEvent` with a reason 
+
 ## Developing
 
 Requirements:
