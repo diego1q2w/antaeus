@@ -73,6 +73,9 @@ TODO: Update the App Structure
 
 `Iteration 11` - Added the `pleo-antaeus-retrier` service which will run in an independent container. It will communicate with the `pleo-antaeus-scheduler` via RabbitMQ events.
 
+`Iteration 12` - Added the payment logic using `EvenSourcing` so we get the latest state of the PaymentInvoice upon which we are going to decide if is worth retrying.
+
+
 ## Developing
 
 Requirements:

@@ -5,10 +5,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 
-interface PayEvent
+interface PayEvent {
+    val timestamp: Long
+}
 
 @Serializable
-data class InvoicePayCommitSucceedEvent(val invoiceID: Int, val timestamp: Long): Event(), PayEvent {
+data class InvoicePayCommitSucceedEvent(val invoiceID: Int, override val timestamp: Long): Event(), PayEvent {
 
     override fun toJSON(): String {
         val json = Json(JsonConfiguration.Stable)
@@ -17,7 +19,7 @@ data class InvoicePayCommitSucceedEvent(val invoiceID: Int, val timestamp: Long)
 }
 
 @Serializable
-data class InvoicePayCommitFailedEvent(val invoiceID: Int, val timestamp: Long, val reason: String): Event(), PayEvent {
+data class InvoicePayCommitFailedEvent(val invoiceID: Int, override val timestamp: Long, val reason: String): Event(), PayEvent {
 
     override fun toJSON(): String {
         val json = Json(JsonConfiguration.Stable)
