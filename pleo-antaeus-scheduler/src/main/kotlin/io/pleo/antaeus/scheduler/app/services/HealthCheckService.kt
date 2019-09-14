@@ -18,15 +18,14 @@ class HealthCheckService {
     }
 
     fun isHealthy(): Pair<Boolean, String> {
-        return services.
-                map { (name, isHealthy) -> Pair(name, isHealthy()) }
-                .fold(Pair(true, mutableListOf<ServiceHealth>())) {
-                    (accStatus, accServices), (name, isHealthy) ->
-                    accServices.add(ServiceHealth(name, isHealthy))
-                    Pair(accStatus && isHealthy, accServices)
-                }.let { (isHealthy, statuses) ->
-                    val json = Json(JsonConfiguration.Stable)
-                    Pair(isHealthy, json.stringify(ServiceHealth.serializer().list, statuses))
+        val checkedServices = services.map { (name, isHealthy) -> Pair(name, isHealthy()) }
+
+        return checkedServices.fold(Pair(true, listOf<ServiceHealth>()))
+                { (accStatus, accServices), (name, isHealthy) ->
+                    Pair(accStatus && isHealthy, accServices.plus(ServiceHealth(name, isHealthy)))
+                }.let { (isHealthy, body) ->
+                    Pair(isHealthy, Json(JsonConfiguration.Stable).stringify(ServiceHealth.serializer().list, body))
                 }
+
     }
 }

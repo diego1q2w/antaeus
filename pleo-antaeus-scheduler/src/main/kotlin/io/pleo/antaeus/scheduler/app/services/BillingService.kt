@@ -28,9 +28,8 @@ class BillingService(
     }
 
     /*
-    * "schedulePayments" method is meant to be fast it will only mark all "PENDING" invoices as "SCHEDULED"
-    * It's another process job to handle them "processPayments"
-    * After this, any other invoice that comes after or during the process will have to wait until the next month.
+    * "schedulePayments" method is meant to be fast. It will only mark all "PENDING" invoices as "SCHEDULED"
+    * After this, any other invoice that comes during or after it, will have to wait until the next "month".
     * */
     fun schedulePayments() {
         dal.schedulePendingInvoices().let {
@@ -44,12 +43,12 @@ class BillingService(
     * It process payments per baches.
     *
     * It's time to talk about the elephant in the room. Why the nerve of publishing an event per invoice?
-    * This achieve two things:
+    * This achieve few things:
     *   1- The schedule payments task is fast and thus, less error-prone.
     *   2- Having events, enable transactionality, if there is a network error in either the DB or the payment provider, the event
-    *       gets send to the DLX for a potential retry. Since it wasn't users fault we can try to execute the payment we can rerun the event.
-    *       If the server gets shutdown or the db becomes unreachable, we won't loose those payments and as soon everything gets back to normality.
-    *       We will process every payment from the last successful event.
+    *       gets send to the DLX for a potential retry. Since it wasn't users fault (Perhaps, didn't even hit the endpoint) we can try to re-execute it.
+    *   3- If the server gets shutdown or the DB becomes unreachable, we won't loose those payments and as soon everything gets back to normality.
+    *       We will process every payment from the last successful one.
     */
     fun processPayments() {
         //TODO: Create an app configuration
