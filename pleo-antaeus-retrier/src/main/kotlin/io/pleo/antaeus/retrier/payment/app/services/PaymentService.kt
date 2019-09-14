@@ -26,8 +26,8 @@ class PaymentService(
 
     private fun retry(payment: Payment, invoiceId: Int) {
         if(payment.finalStatus() == Status.FAILED) {
-            when(payment.totalChanges()) {
-                in maxRetries..0 ->
+            when(val total = payment.totalChanges()) {
+                in maxRetries downTo 0 ->
                     InvoicePayRetryApproved(invoiceID = invoiceId, timestamp = getTimestamp())
                             .let(bus::publishMessage)
                 else ->
