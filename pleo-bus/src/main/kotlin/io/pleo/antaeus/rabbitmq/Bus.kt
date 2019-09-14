@@ -1,15 +1,17 @@
 package io.pleo.antaeus.rabbitmq
 
-import com.rabbitmq.client.AMQP
-import com.rabbitmq.client.Connection
-import com.rabbitmq.client.ConnectionFactory
+import com.rabbitmq.client.*
 import com.viartemev.thewhiterabbit.channel.channel
 import com.viartemev.thewhiterabbit.channel.confirmChannel
 import com.viartemev.thewhiterabbit.channel.consume
 import com.viartemev.thewhiterabbit.channel.publish
 import com.viartemev.thewhiterabbit.publisher.OutboundMessage
+import io.pleo.antaeus.rabbitmq.exceptions.RejectedMessageException
 import kotlinx.coroutines.*
 import java.lang.Exception
+
+typealias pleoHandler = (Message) -> Unit
+typealias handler = suspend (Delivery) -> Unit
 
 class Bus(private val prefetchSize: Int = 10) {
     private var connection: Connection
@@ -24,7 +26,18 @@ class Bus(private val prefetchSize: Int = 10) {
     }
 
     fun isHealthy(): Boolean {
-        return connection.isOpen
+        return connection.isOpen && isRunning
+    }
+
+    private fun deliverHandler(h: pleoHandler, channel: Channel): handler {
+        return {
+            try {
+                h(Message(msg = it.body.toString(Charsets.UTF_8), topic = it.envelope.routingKey))
+            } catch (e: RejectedMessageException) {
+                channel.basicReject(it.envelope.deliveryTag, true)
+                throw e
+            }
+        }
     }
 
     fun registerHandler(bucket: String, topic: String, handler: pleoHandler) {
@@ -37,14 +50,29 @@ class Bus(private val prefetchSize: Int = 10) {
         }
 
         isRunning = true
-        handlers.forEach {
+        handlers.forEach {(topic, handler) ->
             GlobalScope.launch {
-                connection.channel {
-                    val handler = it.value
-                    consume(it.key, prefetchSize) {
-                        consumeMessageWithConfirm(NewHandler(handler))
+                runHandler(topic, handler)
+            }
+        }
+    }
+
+    private suspend fun runHandler(topic: String, handler: pleoHandler) {
+        connection.channel {
+            val channel = this
+            consume(topic, prefetchSize) {
+                consumeAlways@ while (isRunning) {
+                    try {
+                        consumeMessageWithConfirm(deliverHandler(handler, channel))
+                    } catch (e: Exception) {
+                        when(e) {
+                            is CancellationException -> break@consumeAlways
+                            else -> continue@consumeAlways
+                        }
                     }
                 }
+                // When any of the consumers fails, will stop the rest of them plus will mark the service as unhealthy
+                isRunning = false
             }
         }
     }
