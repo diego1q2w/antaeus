@@ -3,7 +3,7 @@ package io.pleo.antaeus.retrier.retry.app.services
 import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.retrier.retry.domain.*
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryApprovedEvent
-import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryDisApprovedEvent
+import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryExceededEvent
 import io.pleo.antaeus.retrier.retry.domain.event.PayEvent
 import io.pleo.antaeus.retrier.retry.infra.db.PaymentDal
 import java.time.LocalDateTime
@@ -35,7 +35,7 @@ class RetryService(
                     InvoicePayRetryApprovedEvent(invoiceID = invoiceId, timestamp = getTimestamp())
                             .let(bus::publishMessage)
                 else ->
-                    InvoicePayRetryDisApprovedEvent(invoiceID = invoiceId, timestamp = getTimestamp(), maxRetries = maxRetries)
+                    InvoicePayRetryExceededEvent(invoiceID = invoiceId, timestamp = getTimestamp(), maxRetries = maxRetries)
                             .let(bus::publishMessage)
             }
         }

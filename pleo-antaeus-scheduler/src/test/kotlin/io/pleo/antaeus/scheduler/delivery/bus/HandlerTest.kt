@@ -42,7 +42,7 @@ class HandlerTest {
     fun `it should pass the correct params in invoicePayRetryApproved`() {
         val invoicePayRetryApprovedHandler = invoicePayRetryApprovedHandler(billingService)
         val message = Message(
-                "{\"invoiceID\":1,\"timestamp\":1568438460263}", EventTopic.InvoicePayRetryDisApprovedEvent.name)
+                "{\"invoiceID\":1,\"timestamp\":1568438460263}", EventTopic.InvoicePayRetryExceededEvent.name)
         invoicePayRetryApprovedHandler(message)
 
         verify {
@@ -54,7 +54,7 @@ class HandlerTest {
     fun `it should pass the correct params in invoicePayRetryDisApprovedHandler`() {
         val invoicePayRetryDisApprovedHandler = invoicePayRetryDisApprovedHandler(billingService)
         val message = Message(
-                "{\"invoiceID\":1,\"timestamp\":1568438460263,\"maxRetries\":2}", EventTopic.InvoicePayRetryDisApprovedEvent.name)
+                "{\"invoiceID\":1,\"timestamp\":1568438460263,\"maxRetries\":2}", EventTopic.InvoicePayRetryExceededEvent.name)
         invoicePayRetryDisApprovedHandler(message)
 
         verify {

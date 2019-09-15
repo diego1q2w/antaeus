@@ -85,7 +85,7 @@ fun main() {
     bus.registerHandler(serviceName,
             EventTopic.InvoicePayRetryApprovedEvent.name, invoicePayRetryApprovedHandler(billingService))
     bus.registerHandler(serviceName,
-            EventTopic.InvoicePayRetryDisApprovedEvent.name, invoicePayRetryDisApprovedHandler(billingService))
+            EventTopic.InvoicePayRetryExceededEvent.name, invoicePayRetryDisApprovedHandler(billingService))
 
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){

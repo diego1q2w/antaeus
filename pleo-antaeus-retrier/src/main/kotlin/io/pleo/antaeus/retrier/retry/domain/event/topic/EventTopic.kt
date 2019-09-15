@@ -4,5 +4,5 @@ enum class EventTopic {
     InvoicePayCommitFailedEvent,
     InvoicePayCommitSucceedEvent,
     InvoicePayRetryApprovedEvent,
-    InvoicePayRetryDisApprovedEvent
+    InvoicePayRetryExceededEvent
 }

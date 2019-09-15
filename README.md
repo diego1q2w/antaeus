@@ -75,10 +75,11 @@ TODO: Update the App Structure
 
 `Iteration 12` - Added the payment logic using `EvenSourcing` so we get the latest state of the PaymentInvoice upon which we are going to decide if is worth retrying.
 
-`Iteration 13` - Wire-up the `retrier` service, it emits 2 events `InvoicePayRetryApprovedEvent` and `InvoicePayRetryDisApprovedEvent`. Which will be used to either retry the payment or mark it as failed. The `InvoicePayRetryDisApprovedEvent` will be used for the notification domain as well.
+`Iteration 13` - Wire-up the `retrier` service, it emits 2 events `InvoicePayRetryApprovedEvent` and `InvoicePayRetryExceededEvent`. Which will be used to either retry the payment or mark it as failed. The `InvoicePayRetryExceededEvent` will be used for the notification domain as well.
 
-`Iteration 14` - Hooked up the `InvoicePayRetryDisApprovedEvent` and `InvoicePayRetryDisApprovedEvent` into the `pleo-antaeus-scheduler`. So now payments are either retry or mark as `FAILED`.
+`Iteration 14` - Hooked up the `InvoicePayRetryExceededEvent` and `InvoicePayRetryExceededEvent` into the `pleo-antaeus-scheduler`. So now payments are either retry or mark as `FAILED`.
 
+`Iteration 15` - Created the notification domain using the `InvoicePayRetryExceededEvent`. It's just a log since it's to probe that the same event can be used for 2 micro-services independently. You'll see in the logs a message like `Dear customer your invoice with ID <id> ...`, if you use that invoice ID to ask the `scheduler` service [http://localhost:7000/rest/v1/invoices/<id>](http://localhost:7000/rest/v1/invoices/<id>), you will see a `FAILED` status. Notice both process happen in 2 different containers, but everything is sync thanks to the bus.
 
 ## Developing
 

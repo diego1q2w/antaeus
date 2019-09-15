@@ -12,9 +12,7 @@ import io.pleo.antaeus.scheduler.app.services.CustomerService
 import io.pleo.antaeus.scheduler.app.services.HealthCheckService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
 import mu.KotlinLogging
-import org.eclipse.jetty.client.HttpContent
 import org.eclipse.jetty.http.HttpStatus
-import org.eclipse.jetty.websocket.api.StatusCode
 
 private val logger = KotlinLogging.logger {}
 

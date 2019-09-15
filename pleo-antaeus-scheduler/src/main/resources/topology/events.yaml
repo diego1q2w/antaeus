@@ -8,7 +8,7 @@ consume:
       durable: True
       dlx: True
       expires: 1d
-    - name: InvoicePayRetryDisApprovedEvent
+    - name: InvoicePayRetryExceededEvent
       durable: True
       dlx: True
       expires: 1d

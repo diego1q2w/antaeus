@@ -3,12 +3,15 @@
 package io.pleo.antaeus.retrier
 
 import io.pleo.antaeus.rabbitmq.Bus
+import io.pleo.antaeus.retrier.notification.app.NotificationService
+import io.pleo.antaeus.retrier.notification.deliver.bus.invoicePayRetryDisApprovedHandler
 import io.pleo.antaeus.retrier.retry.app.services.HealthCheckService
 import io.pleo.antaeus.retrier.retry.app.services.RetryService
 import io.pleo.antaeus.retrier.retry.delivery.bus.invoicePayCommitFailedHandler
 import io.pleo.antaeus.retrier.retry.delivery.bus.invoicePayCommitSucceedHandler
 import io.pleo.antaeus.retrier.retry.delivery.http.AntaeusRest
 import io.pleo.antaeus.retrier.retry.domain.event.topic.EventTopic
+import io.pleo.antaeus.retrier.notification.domain.event.topic.EventTopic as NotifEventTopic
 import io.pleo.antaeus.retrier.retry.infra.db.EventTable
 import io.pleo.antaeus.retrier.retry.infra.db.PaymentDal
 import org.jetbrains.exposed.sql.Database
@@ -39,12 +42,15 @@ fun main() {
     val dal = PaymentDal(db)
     val bus = Bus()
 
-    val retryService = RetryService(dal, bus, LocalDateTime::now, 2)
+    val retryService = RetryService(dal, bus, LocalDateTime::now, 3)
+    val notificationService = NotificationService()
 
     bus.registerHandler(serviceName,
             EventTopic.InvoicePayCommitFailedEvent.name, invoicePayCommitFailedHandler(retryService))
     bus.registerHandler(serviceName,
             EventTopic.InvoicePayCommitSucceedEvent.name, invoicePayCommitSucceedHandler(retryService))
+    bus.registerHandler(serviceName,
+            NotifEventTopic.InvoicePayRetryExceededEvent.name, invoicePayRetryDisApprovedHandler(notificationService))
 
     bus.run()
 

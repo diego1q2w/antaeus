@@ -4,7 +4,7 @@ import io.pleo.antaeus.rabbitmq.Message
 import io.pleo.antaeus.rabbitmq.exceptions.RejectedMessageException
 import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.domain.event.InvoicePayRetryApprovedEvent
-import io.pleo.antaeus.scheduler.domain.event.InvoicePayRetryDisApprovedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayRetryExceededEvent
 import io.pleo.antaeus.scheduler.domain.event.InvoiceScheduledEvent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -59,7 +59,7 @@ fun  invoicePayRetryDisApprovedHandler(service: BillingService): (Message) -> Un
 
     return { message ->
         try {
-            val event = Json(JsonConfiguration.Stable).parse(InvoicePayRetryDisApprovedEvent.serializer(), message.msg)
+            val event = Json(JsonConfiguration.Stable).parse(InvoicePayRetryExceededEvent.serializer(), message.msg)
             service.failedPayment(event.invoiceID)
         } catch (e: Exception) {
             logger.error { "Unable to handle ${message.topic}: ${e.message}" }

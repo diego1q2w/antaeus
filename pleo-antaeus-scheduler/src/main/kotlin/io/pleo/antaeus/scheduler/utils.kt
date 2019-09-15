@@ -18,7 +18,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
     }
 
     customers.forEach { customer ->
-        (1..10).forEach {
+        (1..15).forEach {
             dal.createInvoice(
                 amount = Money(
                     value = BigDecimal(Random.nextDouble(10.0, 500.0)),

@@ -5,7 +5,7 @@ import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.retrier.retry.domain.*
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryApprovedEvent
-import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryDisApprovedEvent
+import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayRetryExceededEvent
 import io.pleo.antaeus.retrier.retry.infra.db.PaymentDal
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -83,7 +83,7 @@ class RetryServiceTest {
         retryService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 3, timestamp = 1, reason = "foo"))
 
         verify {
-            bus.publishMessage(InvoicePayRetryDisApprovedEvent(invoiceID = 3, timestamp = 955197000000, maxRetries = maxRetries))
+            bus.publishMessage(InvoicePayRetryExceededEvent(invoiceID = 3, timestamp = 955197000000, maxRetries = maxRetries))
         }
 
         confirmVerified(bus)
