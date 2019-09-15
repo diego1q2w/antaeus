@@ -19,9 +19,13 @@ class HealthCheckServiceTest {
         service.addHealthCheck("bar") { true }
         service.addHealthCheck("foobar") { true }
 
-        val (isHealthy, body) = service.isHealthy()
+        val (isHealthy, services) = service.isHealthy()
         assert(isHealthy)
-        assertEquals("""[{"name":"foo","isHealthy":true},{"name":"bar","isHealthy":true},{"name":"foobar","isHealthy":true}]""", body)
+        assertEquals(listOf(
+                mapOf("foo" to true),
+                mapOf("bar" to true),
+                mapOf("foobar" to true)
+        ), services)
     }
 
     @Test
@@ -32,6 +36,10 @@ class HealthCheckServiceTest {
 
         val (isHealthy, body) = service.isHealthy()
         assert(!isHealthy)
-        assertEquals("""[{"name":"foo","isHealthy":true},{"name":"bar","isHealthy":true},{"name":"foobar","isHealthy":false}]""", body)
+        assertEquals(listOf(
+                mapOf("foo" to true),
+                mapOf("bar" to true),
+                mapOf("foobar" to false)
+        ), body)
     }
 }
