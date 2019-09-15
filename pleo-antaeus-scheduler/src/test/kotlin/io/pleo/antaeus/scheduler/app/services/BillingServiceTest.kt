@@ -3,10 +3,13 @@ package io.pleo.antaeus.scheduler.app.services
 import io.mockk.*
 import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.scheduler.app.exceptions.CurrencyMismatchException
+import io.pleo.antaeus.scheduler.app.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.scheduler.app.exceptions.NetworkException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
-import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.domain.*
+import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitFailedEvent
+import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitSucceedEvent
+import io.pleo.antaeus.scheduler.domain.bus.InvoiceScheduledEvent
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -56,7 +59,7 @@ class BillingServiceTest {
         return LocalDateTime.parse(str, formatter)
     }
 
-    private val billingServiceService = BillingService(dal = dal, paymentProvider = paymentProvider, bus = bus, now=now)
+    private val billingServiceService = BillingService(dal = dal, paymentProvider = paymentProvider, bus = bus, now=now, processBatches = 10)
 
     @Test
     fun `should publish only deduplicated scheduled payments`() {
@@ -114,5 +117,10 @@ class BillingServiceTest {
         }
 
         confirmVerified(bus)
+    }
+
+    @Test
+    fun `failed payment will throw an error in case of invoice not found`() {
+        assertThrows<InvoiceNotFoundException> { billingServiceService.failedPayment(5) }
     }
 }

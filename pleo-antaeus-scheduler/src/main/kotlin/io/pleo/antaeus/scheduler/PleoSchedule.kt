@@ -26,13 +26,13 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.lang.Exception
 import java.sql.Connection
 import java.time.LocalDateTime
 import kotlin.concurrent.fixedRateTimer
 
 fun main() {
-    //TODO: move it to an env var
-    val serviceName = "scheduler"
+    val serviceName = System.getenv("SERVICE_NAME") ?: throw Exception("No SERVICE_NAME env provided")
 
     // The tables to create in the database.
     val tables = arrayOf(InvoiceTable, CustomerTable)
@@ -72,7 +72,8 @@ fun main() {
             paymentProvider = paymentProvider,
             dal = dal,
             bus = bus,
-            now = LocalDateTime::now
+            now = LocalDateTime::now,
+            processBatches = 10
     )
 
     // Bus handlers

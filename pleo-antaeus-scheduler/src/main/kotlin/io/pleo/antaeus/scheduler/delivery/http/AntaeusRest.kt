@@ -51,9 +51,9 @@ class AntaeusRest (
                // Route to check whether the app is running
                // URL: /rest/health
                get("health") {
-                   val (isHealthy, body) = healthCheckService.isHealthy()
+                   val (isHealthy, services) = healthCheckService.isHealthy()
                    it.status(if (isHealthy) HttpStatus.OK_200 else HttpStatus.INTERNAL_SERVER_ERROR_500)
-                   it.json(body)
+                   it.json(services)
                }
 
                // V1

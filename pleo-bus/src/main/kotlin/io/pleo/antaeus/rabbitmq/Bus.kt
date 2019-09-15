@@ -20,7 +20,7 @@ class Bus(private val prefetchSize: Int = 10) {
 
     init {
         val factory = ConnectionFactory()
-        val uri = System.getenv("RABBITMQ_HOSTNAME") ?: throw Exception("No RabbitMQ uri provided")
+        val uri = System.getenv("RABBITMQ_HOSTNAME") ?: throw Exception("No RABBITMQ_HOSTNAME env provided")
         factory.setUri(uri)
         connection = factory.newConnection()
     }

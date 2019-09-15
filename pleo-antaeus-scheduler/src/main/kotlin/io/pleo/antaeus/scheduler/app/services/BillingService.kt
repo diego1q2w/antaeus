@@ -7,9 +7,9 @@ import io.pleo.antaeus.scheduler.app.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.domain.Invoice
-import io.pleo.antaeus.scheduler.domain.InvoicePayCommitFailedEvent
-import io.pleo.antaeus.scheduler.domain.InvoicePayCommitSucceedEvent
-import io.pleo.antaeus.scheduler.domain.InvoiceScheduledEvent
+import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitFailedEvent
+import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitSucceedEvent
+import io.pleo.antaeus.scheduler.domain.bus.InvoiceScheduledEvent
 import mu.KotlinLogging
 import java.lang.Exception
 import java.time.LocalDateTime
@@ -21,7 +21,8 @@ class BillingService(
         private val paymentProvider: PaymentProvider,
         private val dal: AntaeusDal,
         private val bus: Bus,
-        private val now: now
+        private val now: now,
+        private val processBatches: Int
 ) {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -52,7 +53,7 @@ class BillingService(
     */
     fun processPayments() {
         //TODO: Create an app configuration
-        dal.fetchScheduledInvoices(10).forEach {
+        dal.fetchScheduledInvoices(processBatches).forEach {
             if (dal.markInvoiceAsProcessing(it) == 1) {
                 publishProcessEvent(invoice = it)
             }
