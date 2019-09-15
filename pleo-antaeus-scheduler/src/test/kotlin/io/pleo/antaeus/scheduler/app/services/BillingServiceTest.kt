@@ -7,9 +7,9 @@ import io.pleo.antaeus.scheduler.app.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.scheduler.app.exceptions.NetworkException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.domain.*
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitFailedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitSucceedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoiceScheduledEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitFailedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitSucceedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoiceScheduledEvent
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

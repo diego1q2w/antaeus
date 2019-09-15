@@ -17,6 +17,7 @@ import io.pleo.antaeus.scheduler.delivery.bus.invoicePayRetryDisApprovedHandler
 import io.pleo.antaeus.scheduler.delivery.bus.invoiceScheduledHandler
 import io.pleo.antaeus.scheduler.delivery.bus.monthlyHandler
 import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
+import io.pleo.antaeus.scheduler.domain.event.topic.EventTopic
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.infra.db.CustomerTable
 import io.pleo.antaeus.scheduler.infra.db.InvoiceTable
@@ -77,10 +78,14 @@ fun main() {
     )
 
     // Bus handlers
-    bus.registerHandler(serviceName, "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
-    bus.registerHandler(serviceName, "MonthlyEvent", monthlyHandler(billingService))
-    bus.registerHandler(serviceName, "InvoicePayRetryApprovedEvent", invoicePayRetryApprovedHandler(billingService))
-    bus.registerHandler(serviceName, "InvoicePayRetryDisApprovedEvent", invoicePayRetryDisApprovedHandler(billingService))
+    bus.registerHandler(serviceName,
+            EventTopic.InvoiceScheduledEvent.name, invoiceScheduledHandler(billingService))
+    bus.registerHandler(serviceName,
+            EventTopic.MonthlyEvent.name, monthlyHandler(billingService))
+    bus.registerHandler(serviceName,
+            EventTopic.InvoicePayRetryApprovedEvent.name, invoicePayRetryApprovedHandler(billingService))
+    bus.registerHandler(serviceName,
+            EventTopic.InvoicePayRetryDisApprovedEvent.name, invoicePayRetryDisApprovedHandler(billingService))
 
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){

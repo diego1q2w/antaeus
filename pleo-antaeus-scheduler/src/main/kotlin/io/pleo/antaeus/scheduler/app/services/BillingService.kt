@@ -7,9 +7,9 @@ import io.pleo.antaeus.scheduler.app.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.domain.Invoice
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitFailedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayCommitSucceedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoiceScheduledEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitFailedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitSucceedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoiceScheduledEvent
 import mu.KotlinLogging
 import java.lang.Exception
 import java.time.LocalDateTime

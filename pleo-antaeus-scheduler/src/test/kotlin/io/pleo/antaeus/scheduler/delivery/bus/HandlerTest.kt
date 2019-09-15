@@ -7,7 +7,7 @@ import io.pleo.antaeus.rabbitmq.Message
 import io.pleo.antaeus.rabbitmq.exceptions.RejectedMessageException
 import io.pleo.antaeus.scheduler.app.exceptions.NetworkException
 import io.pleo.antaeus.scheduler.app.services.BillingService
-import io.pleo.antaeus.scheduler.domain.bus.topic.EventTopic
+import io.pleo.antaeus.scheduler.domain.event.topic.EventTopic
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

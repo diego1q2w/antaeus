@@ -3,9 +3,9 @@ package io.pleo.antaeus.scheduler.delivery.bus
 import io.pleo.antaeus.rabbitmq.Message
 import io.pleo.antaeus.rabbitmq.exceptions.RejectedMessageException
 import io.pleo.antaeus.scheduler.app.services.BillingService
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayRetryApprovedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoicePayRetryDisApprovedEvent
-import io.pleo.antaeus.scheduler.domain.bus.InvoiceScheduledEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayRetryApprovedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoicePayRetryDisApprovedEvent
+import io.pleo.antaeus.scheduler.domain.event.InvoiceScheduledEvent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import mu.KotlinLogging
