@@ -31,12 +31,13 @@ class RetryServiceTest {
         }
 
         val dbal = mockk<PaymentDal>(relaxed = true) {
-            every { fetchEvents(1) } returns payment
+            every { fetchPaymentAggregation(1) } returns payment
         }
 
         val retryService = RetryService(dbal, bus, now, maxRetries)
 
-        retryService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 1, reason = "foo"))
+        val event = InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 1, reason = "foo")
+        retryService.paymentEvent(PaymentEvent(invoiceId = event.invoiceID, type = event.topic(), event = event))
 
         verify {
             bus wasNot Called
@@ -53,12 +54,13 @@ class RetryServiceTest {
         }
 
         val dbal = mockk<PaymentDal>(relaxed = true) {
-            every { fetchEvents(2) } returns payment
+            every { fetchPaymentAggregation(2) } returns payment
         }
 
         val retryService = RetryService(dbal, bus, now, maxRetries)
 
-        retryService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 1, reason = "foo"))
+        val event = InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 1, reason = "foo")
+        retryService.paymentEvent(PaymentEvent(invoiceId = event.invoiceID, type = event.topic(), event = event))
 
         verify {
             bus.publishMessage(InvoicePayRetryApprovedEvent(invoiceID = 2, timestamp = 955197000000))
@@ -75,12 +77,13 @@ class RetryServiceTest {
         }
 
         val dbal = mockk<PaymentDal>(relaxed = true) {
-            every { fetchEvents(3) } returns payment
+            every { fetchPaymentAggregation(3) } returns payment
         }
 
         val retryService = RetryService(dbal, bus, now, maxRetries)
 
-        retryService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 3, timestamp = 1, reason = "foo"))
+        val event = InvoicePayCommitFailedEvent(invoiceID = 3, timestamp = 1, reason = "foo")
+        retryService.paymentEvent(PaymentEvent(invoiceId = event.invoiceID, type = event.topic(), event = event))
 
         verify {
             bus.publishMessage(InvoicePayRetryExceededEvent(invoiceID = 3, timestamp = 955197000000, maxRetries = maxRetries))

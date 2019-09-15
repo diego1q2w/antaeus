@@ -5,6 +5,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.pleo.antaeus.rabbitmq.Message
 import io.pleo.antaeus.retrier.retry.app.services.RetryService
+import io.pleo.antaeus.retrier.retry.domain.PaymentEvent
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayCommitSucceedEvent
 import io.pleo.antaeus.retrier.retry.domain.event.topic.EventTopic
@@ -22,8 +23,9 @@ class HandlerTest {
                 "{\"invoiceID\":1,\"timestamp\":1568438460263,\"reason\":\"foo\"}", EventTopic.InvoicePayCommitFailedEvent.name)
         invoicePayCommitFailedHandler(message)
 
+        val event = InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 1568438460263, reason = "foo")
         verify {
-            retryService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 1, timestamp = 1568438460263, reason = "foo"))
+            retryService.paymentEvent(PaymentEvent(invoiceId = event.invoiceID, type = event.topic(), event = event))
         }
     }
 
@@ -34,8 +36,9 @@ class HandlerTest {
                 "{\"invoiceID\":1,\"timestamp\":1568438460263}", EventTopic.InvoicePayCommitSucceedEvent.name)
         invoicePayCommitSucceedHandler(message)
 
+        val event = InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 1568438460263)
         verify {
-            retryService.paymentEvent(InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 1568438460263))
+            retryService.paymentEvent(PaymentEvent(invoiceId = event.invoiceID, type = event.topic(), event = event))
         }
     }
 }

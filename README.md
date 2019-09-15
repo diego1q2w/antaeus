@@ -79,11 +79,13 @@ TODO: Update the App Structure
 
 `Iteration 14` - Hooked up the `InvoicePayRetryExceededEvent` and `InvoicePayRetryExceededEvent` into the `pleo-antaeus-scheduler`. So now payments are either retry or mark as `FAILED`.
 
-`Iteration 15` - Created the notification domain using the `InvoicePayRetryExceededEvent`. It's just a log since it's to probe that the same event can be used for 2 micro-services independently. You'll see in the logs a message like `Dear customer your invoice with ID <id> ...`, if you use that invoice ID to ask the `scheduler` service [http://localhost:7000/rest/v1/invoices/\<id\>](http://localhost:7000/rest/v1/invoices/<id>), you will see a `FAILED` status for that specific invoice. Notice both process happen in 2 different containers, but everything is sync thanks to the bus.
+`Iteration 15` - Created the notification domain using the `InvoicePayRetryExceededEvent`. It's just a log since it's to probe that the same event can be used for 2 micro-services independently. You'll see in the logs a message like `Dear customer your invoice with ID <id> ...`, if you use that invoice ID to ask the `scheduler` service [http://localhost:7000/rest/v1/invoices/\<id\>](http://localhost:7000/rest/v1/invoices/:id), you will see a `FAILED` status for that specific invoice. Notice both process happen in 2 different containers, but everything is sync thanks to the bus.
 
 `Iteration 16` - Now the Bus topology is created at start up time, you'll have to wait for both services to fully start for it to show in the RabbitMQ Management Tool: [localhost:15672](localhost:15672)
 
 `Iteration 17` - Added few logic to the `utils/paymentProvider`. Now there is a probability of 3% that one of the documented exceptions happen being the `NetworkException` the most likely to happen. This adds some realism to the experiment, Notice how in case of `NetworkException` the event will be sent to the `dlx` queue.
+
+`Iteration 18` - And last but not least, added a small rest api in the `pleo-antaeus-retrier` to get all the payment attempts for a given invoice ID. [http://localhost:7001/rest/v1/payments/\<invoiceId\>](http://localhost:7001/rest/v1/payments/:invoiceId)
 
 ## Developing
 

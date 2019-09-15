@@ -6,6 +6,7 @@ import io.pleo.antaeus.rabbitmq.Bus
 import io.pleo.antaeus.retrier.notification.app.NotificationService
 import io.pleo.antaeus.retrier.notification.deliver.bus.invoicePayRetryDisApprovedHandler
 import io.pleo.antaeus.retrier.retry.app.services.HealthCheckService
+import io.pleo.antaeus.retrier.retry.app.services.PaymentService
 import io.pleo.antaeus.retrier.retry.app.services.RetryService
 import io.pleo.antaeus.retrier.retry.delivery.bus.invoicePayCommitFailedHandler
 import io.pleo.antaeus.retrier.retry.delivery.bus.invoicePayCommitSucceedHandler
@@ -43,6 +44,7 @@ fun main() {
     val bus = Bus()
 
     val retryService = RetryService(dal, bus, LocalDateTime::now, 3)
+    val paymentService = PaymentService(dal)
     val notificationService = NotificationService()
 
     bus.registerHandler(serviceName,
@@ -57,5 +59,8 @@ fun main() {
     val healthCheckService = HealthCheckService()
     healthCheckService.addHealthCheck("bus", bus::isHealthy)
 
-    AntaeusRest(healthCheckService = healthCheckService).run()
+    AntaeusRest(
+            healthCheckService = healthCheckService,
+            paymentService = paymentService
+    ).run()
 }

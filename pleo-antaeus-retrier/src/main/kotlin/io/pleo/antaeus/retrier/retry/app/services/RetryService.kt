@@ -18,12 +18,12 @@ class RetryService(
 ) {
 
     //It aggregates all the payments for that invoice in order to decide whether to retry or not
-    fun paymentEvent(cmd: PayEvent) {
-        val payment = dal.fetchEvents(cmd.invoiceID)
+    fun paymentEvent(cmd: PaymentEvent) {
+        val payment = dal.fetchPaymentAggregation(cmd.invoiceId)
         payment.add(cmd)
 
         dal.persistChanges(payment)
-        retry(payment, cmd.invoiceID)
+        retry(payment, cmd.invoiceId)
     }
 
     private fun getTimestamp(): Long = now().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()

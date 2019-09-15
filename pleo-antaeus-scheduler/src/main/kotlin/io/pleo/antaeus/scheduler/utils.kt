@@ -38,7 +38,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
 internal fun getPaymentProvider(): PaymentProvider {
     return object : PaymentProvider {
         override fun charge(invoice: Invoice): Boolean {
-            if(Random.nextInt(100) <= 3) {
+            if(Random.nextInt(100) <= 3) { // 3% probability for an exception to happen
                 when(Random.nextInt(5)) {
                     0 -> throw CustomerNotFoundException(invoice.customerId)
                     1 -> throw CurrencyMismatchException(invoice.id, invoice.customerId)

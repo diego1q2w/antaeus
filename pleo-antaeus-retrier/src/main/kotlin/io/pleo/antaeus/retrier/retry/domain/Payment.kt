@@ -4,24 +4,24 @@ import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.retrier.retry.domain.event.InvoicePayCommitSucceedEvent
 import io.pleo.antaeus.retrier.retry.domain.event.PayEvent
 
-class Payment(private val initEvents: List<PayEvent>) {
+class Payment(private val initEvents: List<PaymentEvent>) {
     private var status: PaymentStatus? = null
-    private var newEvents = mutableListOf<PayEvent>()
+    private var newEvents = mutableListOf<PaymentEvent>()
 
     init {
         apply()
     }
 
-    fun add(event: PayEvent) {
+    fun add(event: PaymentEvent) {
         newEvents.add(event)
         apply()
     }
 
     private fun apply() {
-        initEvents.plus(newEvents).sortedBy { it.timestamp }.forEach {
-            when(it) {
-                is InvoicePayCommitSucceedEvent -> apply(it)
-                is InvoicePayCommitFailedEvent -> apply(it)
+        initEvents.plus(newEvents).sortedBy { it.event.timestamp }.forEach {
+            when(it.event) {
+                is InvoicePayCommitSucceedEvent -> apply(it.event)
+                is InvoicePayCommitFailedEvent -> apply(it.event)
             }
         }
 
@@ -39,11 +39,11 @@ class Payment(private val initEvents: List<PayEvent>) {
         return initEvents.size + newEvents.size
     }
 
-    fun difference(): List<PayEvent> {
+    fun difference(): List<PaymentEvent> {
         return newEvents
     }
 
-    fun initialSet(): List<PayEvent> {
+    fun initialSet(): List<PaymentEvent> {
         return initEvents
     }
 

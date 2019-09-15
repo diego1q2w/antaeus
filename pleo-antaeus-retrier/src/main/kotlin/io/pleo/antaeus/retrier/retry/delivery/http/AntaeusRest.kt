@@ -4,13 +4,15 @@ import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
 import io.pleo.antaeus.retrier.retry.app.services.HealthCheckService
+import io.pleo.antaeus.retrier.retry.app.services.PaymentService
 import mu.KotlinLogging
 import org.eclipse.jetty.http.HttpStatus
 
 private val logger = KotlinLogging.logger {}
 
 class AntaeusRest (
-        private val healthCheckService: HealthCheckService
+        private val healthCheckService: HealthCheckService,
+        private val paymentService: PaymentService
 ) : Runnable {
     override fun run() {
         app.start(7000)
@@ -38,6 +40,12 @@ class AntaeusRest (
                    val (isHealthy, body) = healthCheckService.isHealthy()
                    it.status(if (isHealthy) HttpStatus.OK_200 else HttpStatus.INTERNAL_SERVER_ERROR_500)
                    it.json(body)
+               }
+
+               path("v1") {
+                   get("payments/:invoice") {
+                       it.json(paymentService.fetch(it.pathParam("invoice").toInt()))
+                   }
                }
            }
         }

@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test
 
 class PaymentTest {
     @Test
-    fun `the latest status should be pay failed even with events out of order`() {
-        val payment = Payment(listOf<PayEvent>(
-                InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 123, reason = ""),
-                InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12),
-                InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = "")
+    fun `the latest status should be failed even with events out of order`() {
+        val payment = Payment(listOf<PaymentEvent>(
+                PaymentEvent(2, "", InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 123, reason = "")),
+                PaymentEvent(1, "", InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12)),
+                PaymentEvent(4, "", InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = ""))
         ))
 
         assertEquals(Status.FAILED, payment.finalStatus())
@@ -21,21 +21,21 @@ class PaymentTest {
     }
 
     @Test
-    fun `the latest status should be pay succeed even with events out of order`() {
-        val payment = Payment(listOf<PayEvent>(
-                InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 123, reason = ""),
-                InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12),
-                InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = "")
+    fun `the latest status should be succeed even with events out of order`() {
+        val payment = Payment(listOf<PaymentEvent>(
+                PaymentEvent(2, "",InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 123, reason = "")),
+                PaymentEvent(1, "",InvoicePayCommitSucceedEvent(invoiceID = 1, timestamp = 12)),
+                PaymentEvent(4, "",InvoicePayCommitFailedEvent(invoiceID = 4, timestamp = 12345, reason = ""))
         ))
 
-        payment.add(InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333))
-        payment.add(InvoicePayCommitSucceedEvent(invoiceID = 6, timestamp = 1))
+        payment.add(PaymentEvent(3, "",InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333)))
+        payment.add(PaymentEvent(6, "",InvoicePayCommitSucceedEvent(invoiceID = 6, timestamp = 1)))
 
         assertEquals(Status.SUCCEED, payment.finalStatus())
         assertEquals(5, payment.totalChanges())
-        assertEquals(mutableListOf<PayEvent>(
-                InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333),
-                InvoicePayCommitSucceedEvent(invoiceID = 6, timestamp = 1)
+        assertEquals(mutableListOf<PaymentEvent>(
+                PaymentEvent(3, "",InvoicePayCommitSucceedEvent(invoiceID = 3, timestamp = 22333)),
+                PaymentEvent(6, "",InvoicePayCommitSucceedEvent(invoiceID = 6, timestamp = 1))
         ), payment.difference())
     }
 }

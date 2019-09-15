@@ -12,34 +12,32 @@ import io.pleo.antaeus.retrier.retry.infra.db.exceptions.UnknownTypeException
 
 class PaymentDal(private val db: Database) {
 
-    fun fetchEvents(invoiceId: Int): Payment {
-        transaction(db) {
+    fun fetchPaymentAggregation(invoiceId: Int): Payment = Payment(fetchEvents(invoiceId))
+
+    fun fetchEvents(invoiceId: Int): List<PaymentEvent> = transaction(db) {
             EventTable
                     .select { EventTable.invoiceId eq invoiceId }
                     .map { it.toEvent() }
-        }.let {
-            return Payment(it)
-        }
     }
 
     fun persistChanges(payment: Payment): Unit = payment.difference().forEach {addEvent(it)}
 
-    private fun addEvent(event: PayEvent): Int {
-        val eventJson = when(event) {
+    private fun addEvent(event: PaymentEvent): Int {
+        val eventJson = when(event.event) {
             is InvoicePayCommitSucceedEvent ->
-                Json(JsonConfiguration.Stable).stringify(InvoicePayCommitSucceedEvent.serializer(), event)
+                Json(JsonConfiguration.Stable).stringify(InvoicePayCommitSucceedEvent.serializer(), event.event)
             is InvoicePayCommitFailedEvent ->
-                Json(JsonConfiguration.Stable).stringify(InvoicePayCommitFailedEvent.serializer(), event)
-            else -> throw UnknownTypeException(event::class.simpleName!!)
+                Json(JsonConfiguration.Stable).stringify(InvoicePayCommitFailedEvent.serializer(), event.event)
+            else -> throw UnknownTypeException(event.event::class.simpleName!!)
         }
 
         return addEvent(event, eventJson) ?: 0
     }
 
-    private fun addEvent(event: PayEvent, eventJson: String): Int? = transaction(db) {
+    private fun addEvent(event: PaymentEvent, eventJson: String): Int? = transaction(db) {
         EventTable.insert {
-            it[invoiceId] = event.invoiceID
-            it[type] = event::class.simpleName!!
+            it[invoiceId] = event.invoiceId
+            it[type] = event.event::class.simpleName!!
             it[EventTable.event] = eventJson
         } get EventTable.id
     }
