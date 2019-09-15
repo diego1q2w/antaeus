@@ -23,6 +23,7 @@ class BillingServiceTest {
     private val invoice2 = Invoice( id = 2, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
     private val invoice3 = Invoice( id = 3, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
     private val invoice4 = Invoice( id = 4, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PENDING )
+    private val invoice6 = Invoice( id = 4, customerId = 1, amount = Money(value= BigDecimal(1), currency = Currency.DKK), status = InvoiceStatus.PAID )
 
 
     private val dal = mockk<AntaeusDal> {
@@ -40,6 +41,7 @@ class BillingServiceTest {
         every { fetchInvoice(3) } returns invoice3
         every { fetchInvoice(4) } returns invoice4
         every { fetchInvoice(5) } returns null
+        every { fetchInvoice(6) } returns invoice6
     }
 
     private val paymentProvider = mockk<PaymentProvider> {
@@ -47,6 +49,7 @@ class BillingServiceTest {
         every { charge(invoice2) } throws  NetworkException()
         every { charge(invoice3) } returns false
         every { charge(invoice4) } throws  CurrencyMismatchException(1,1)
+        every { charge(invoice6) } throws  NetworkException()
     }
 
     private val bus = mockk<Bus> {
@@ -111,6 +114,17 @@ class BillingServiceTest {
     @Test
     fun `if there is a recognized issue while processing nothing should happen`() {
         assert(billingServiceService.commitPayment(4) == Unit)
+
+        verify {
+            bus wasNot Called
+        }
+
+        confirmVerified(bus)
+    }
+
+    @Test
+    fun `if the invoice was paid it wont try to charge again`() {
+        assert(billingServiceService.commitPayment(6) == Unit)
 
         verify {
             bus wasNot Called

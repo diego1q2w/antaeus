@@ -7,6 +7,7 @@ import io.pleo.antaeus.scheduler.app.exceptions.InvoiceNotFoundException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.infra.db.AntaeusDal
 import io.pleo.antaeus.scheduler.domain.Invoice
+import io.pleo.antaeus.scheduler.domain.InvoiceStatus
 import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitFailedEvent
 import io.pleo.antaeus.scheduler.domain.event.InvoicePayCommitSucceedEvent
 import io.pleo.antaeus.scheduler.domain.event.InvoiceScheduledEvent
@@ -67,6 +68,8 @@ class BillingService(
     fun commitPayment(invoiceId: Int) {
         try {
             val invoice = dal.fetchInvoice(invoiceId)?: throw InvoiceNotFoundException(invoiceId)
+
+            if (invoice.status == InvoiceStatus.PAID) return
 
             paymentProvider.charge(invoice).let {
                 if(it) successPayment(invoice) else failedPayment(invoice, "account balance did not allow the charge")
