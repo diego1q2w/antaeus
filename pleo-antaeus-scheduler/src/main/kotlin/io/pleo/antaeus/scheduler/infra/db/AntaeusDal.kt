@@ -46,6 +46,8 @@ class AntaeusDal(private val db: Database) {
 
     fun markInvoiceAsRetry(invoice: Invoice): Int = markInvoiceAsStatus(invoice, InvoiceStatus.RETRY)
 
+    fun markInvoiceAsFailed(invoice: Invoice): Int = markInvoiceAsStatus(invoice, InvoiceStatus.FAILED)
+
     private fun markInvoiceAsStatus(invoice: Invoice, status: InvoiceStatus): Int = transaction(db) {
         InvoiceTable.update({ InvoiceTable.id.eq(invoice.id)}) {
             it[InvoiceTable.status] = status.toString()

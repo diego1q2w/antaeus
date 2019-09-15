@@ -3,6 +3,8 @@ package io.pleo.antaeus.scheduler.delivery.bus
 import io.pleo.antaeus.rabbitmq.Message
 import io.pleo.antaeus.rabbitmq.exceptions.RejectedMessageException
 import io.pleo.antaeus.scheduler.app.services.BillingService
+import io.pleo.antaeus.scheduler.domain.InvoicePayRetryApprovedEvent
+import io.pleo.antaeus.scheduler.domain.InvoicePayRetryDisApprovedEvent
 import io.pleo.antaeus.scheduler.domain.InvoiceScheduledEvent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
@@ -34,6 +36,34 @@ fun  monthlyHandler(service: BillingService): (Message) -> Unit {
             service.schedulePayments()
         } catch (e: Exception) {
             logger.error { "Unable to handle ${message.topic}: ${e.message}" }
+        }
+    }
+}
+
+fun  invoicePayRetryApprovedHandler(service: BillingService): (Message) -> Unit {
+    val logger = KotlinLogging.logger {}
+
+    return { message ->
+        try {
+            val event = Json(JsonConfiguration.Stable).parse(InvoicePayRetryApprovedEvent.serializer(), message.msg)
+            service.commitPayment(event.invoiceID)
+        } catch (e: Exception) {
+            logger.error { "Unable to handle ${message.topic}: ${e.message}" }
+            throw RejectedMessageException()
+        }
+    }
+}
+
+fun  invoicePayRetryDisApprovedHandler(service: BillingService): (Message) -> Unit {
+    val logger = KotlinLogging.logger {}
+
+    return { message ->
+        try {
+            val event = Json(JsonConfiguration.Stable).parse(InvoicePayRetryDisApprovedEvent.serializer(), message.msg)
+            service.failedPayment(event.invoiceID)
+        } catch (e: Exception) {
+            logger.error { "Unable to handle ${message.topic}: ${e.message}" }
+            throw RejectedMessageException()
         }
     }
 }

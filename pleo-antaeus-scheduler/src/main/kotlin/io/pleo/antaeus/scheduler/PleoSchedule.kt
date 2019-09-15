@@ -12,6 +12,8 @@ import io.pleo.antaeus.scheduler.app.services.BillingService
 import io.pleo.antaeus.scheduler.app.services.CustomerService
 import io.pleo.antaeus.scheduler.app.services.HealthCheckService
 import io.pleo.antaeus.scheduler.app.services.InvoiceService
+import io.pleo.antaeus.scheduler.delivery.bus.invoicePayRetryApprovedHandler
+import io.pleo.antaeus.scheduler.delivery.bus.invoicePayRetryDisApprovedHandler
 import io.pleo.antaeus.scheduler.delivery.bus.invoiceScheduledHandler
 import io.pleo.antaeus.scheduler.delivery.bus.monthlyHandler
 import io.pleo.antaeus.scheduler.delivery.http.AntaeusRest
@@ -76,6 +78,8 @@ fun main() {
     // Bus handlers
     bus.registerHandler(serviceName, "InvoiceScheduledEvent", invoiceScheduledHandler(billingService))
     bus.registerHandler(serviceName, "MonthlyEvent", monthlyHandler(billingService))
+    bus.registerHandler(serviceName, "InvoicePayRetryApprovedEvent", invoicePayRetryApprovedHandler(billingService))
+    bus.registerHandler(serviceName, "InvoicePayRetryDisApprovedEvent", invoicePayRetryDisApprovedHandler(billingService))
 
     // Process pending payments every 5 minutes
     fixedRateTimer("processPayments", true, 2000L, 5000){

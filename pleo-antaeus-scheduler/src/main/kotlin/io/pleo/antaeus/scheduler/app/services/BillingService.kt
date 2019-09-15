@@ -83,6 +83,12 @@ class BillingService(
         }
     }
 
+    fun failedPayment(invoiceId: Int) {
+        val invoice = dal.fetchInvoice(invoiceId)?: throw InvoiceNotFoundException(invoiceId)
+
+        dal.markInvoiceAsFailed(invoice)
+    }
+
     private fun getTimestamp(): Long = now().atZone(ZoneId.of("UTC")).toInstant().toEpochMilli()
 
     private fun successPayment(invoice: Invoice) {

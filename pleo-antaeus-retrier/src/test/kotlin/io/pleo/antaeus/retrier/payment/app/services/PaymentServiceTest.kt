@@ -58,7 +58,7 @@ class PaymentServiceTest {
         paymentService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 2, timestamp = 1, reason = "foo"))
 
         verify {
-            bus.publishMessage(InvoicePayRetryApproved(invoiceID = 2, timestamp = 955197000000))
+            bus.publishMessage(InvoicePayRetryApprovedEvent(invoiceID = 2, timestamp = 955197000000))
         }
 
         confirmVerified(bus)
@@ -80,7 +80,7 @@ class PaymentServiceTest {
         paymentService.paymentEvent(InvoicePayCommitFailedEvent(invoiceID = 3, timestamp = 1, reason = "foo"))
 
         verify {
-            bus.publishMessage(InvoicePayRetryDisApproved(invoiceID = 3, timestamp = 955197000000, maxRetries = maxRetries))
+            bus.publishMessage(InvoicePayRetryDisApprovedEvent(invoiceID = 3, timestamp = 955197000000, maxRetries = maxRetries))
         }
 
         confirmVerified(bus)

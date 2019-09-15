@@ -32,3 +32,21 @@ data class InvoicePayCommitFailedEvent(val invoiceID: Int, val timestamp: Long, 
         return json.stringify(serializer(), this)
     }
 }
+
+@Serializable
+data class InvoicePayRetryApprovedEvent(val invoiceID: Int, val timestamp: Long): Event() {
+
+    override fun toJSON(): String {
+        val json = Json(JsonConfiguration.Stable)
+        return json.stringify(serializer(), this)
+    }
+}
+
+@Serializable
+data class InvoicePayRetryDisApprovedEvent(val invoiceID: Int, val timestamp: Long, val maxRetries: Int): Event() {
+
+    override fun toJSON(): String {
+        val json = Json(JsonConfiguration.Stable)
+        return json.stringify(serializer(), this)
+    }
+}

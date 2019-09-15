@@ -28,10 +28,10 @@ class PaymentService(
         if(payment.finalStatus() == Status.FAILED) {
             when(val total = payment.totalChanges()) {
                 in maxRetries downTo 0 ->
-                    InvoicePayRetryApproved(invoiceID = invoiceId, timestamp = getTimestamp())
+                    InvoicePayRetryApprovedEvent(invoiceID = invoiceId, timestamp = getTimestamp())
                             .let(bus::publishMessage)
                 else ->
-                    InvoicePayRetryDisApproved(invoiceID = invoiceId, timestamp = getTimestamp(), maxRetries = maxRetries)
+                    InvoicePayRetryDisApprovedEvent(invoiceID = invoiceId, timestamp = getTimestamp(), maxRetries = maxRetries)
                             .let(bus::publishMessage)
             }
         }
