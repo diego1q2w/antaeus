@@ -83,6 +83,8 @@ TODO: Update the App Structure
 
 `Iteration 16` - Now the Bus topology is created at start up time, you'll have to wait for both services to fully start for it to show in the RabbitMQ Management Tool: [localhost:15672](localhost:15672)
 
+`Iteration 17` - Added few logic to the `utils/paymentProvider`. Now there is a probability of 3% that one of the documented exceptions happen being the `NetworkException` the most likely to happen. This adds some realism to the experiment, Notice how in case of `NetworkException` the event will be sent to the `dlx` queue.
+
 ## Developing
 
 Requirements:

@@ -1,5 +1,8 @@
 package io.pleo.antaeus.scheduler
 
+import io.pleo.antaeus.scheduler.app.exceptions.CurrencyMismatchException
+import io.pleo.antaeus.scheduler.app.exceptions.CustomerNotFoundException
+import io.pleo.antaeus.scheduler.app.exceptions.NetworkException
 import io.pleo.antaeus.scheduler.app.external.PaymentProvider
 import io.pleo.antaeus.scheduler.domain.Currency
 import io.pleo.antaeus.scheduler.domain.Invoice
@@ -35,7 +38,15 @@ internal fun setupInitialData(dal: AntaeusDal) {
 internal fun getPaymentProvider(): PaymentProvider {
     return object : PaymentProvider {
         override fun charge(invoice: Invoice): Boolean {
-                return Random.nextBoolean()
+            if(Random.nextInt(100) <= 3) {
+                when(Random.nextInt(5)) {
+                    0 -> throw CustomerNotFoundException(invoice.customerId)
+                    1 -> throw CurrencyMismatchException(invoice.id, invoice.customerId)
+                    else -> throw NetworkException() // This is the most likely to happen
+                }
+            }
+
+            return Random.nextBoolean()
         }
     }
 }

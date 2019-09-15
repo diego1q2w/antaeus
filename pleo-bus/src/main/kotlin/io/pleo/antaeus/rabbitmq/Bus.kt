@@ -17,6 +17,7 @@ class Bus(private val prefetchSize: Int = 10) {
     private var connection: Connection
     private var handlers = mutableMapOf<String, Pair<Queue, pleoHandler> >()
     private var isRunning = false
+    private lateinit var bucket: String
 
     init {
         val factory = ConnectionFactory()
@@ -34,20 +35,23 @@ class Bus(private val prefetchSize: Int = 10) {
             try {
                 h(Message(msg = it.body.toString(Charsets.UTF_8), topic = it.envelope.routingKey))
             } catch (e: RejectedMessageException) {
-                channel.basicReject(it.envelope.deliveryTag, true)
+                channel.basicNack(it.envelope.deliveryTag, false, false)
                 throw e
             }
         }
     }
 
     fun registerHandler(bucket: String, topic: String, handler: pleoHandler) {
+        this.bucket = bucket
         handlers[topic] = (Queue(bucket, topic) to handler)
     }
 
     fun run() {
-        if (isRunning) {
+        if (isRunning && handlers.keys.size == 0) {
             return
         }
+
+        connection.createTopology(bucket)
 
         isRunning = true
         handlers.forEach {(_, register) ->
@@ -61,7 +65,7 @@ class Bus(private val prefetchSize: Int = 10) {
         val (queue, handler) = register
         connection.channel {
             val channel = this
-            this.createTopology(queue)
+            this.createQueue(queue)
 
             consume(queue.name(), prefetchSize) {
                 consumeAlways@ while (isRunning) {

@@ -11,18 +11,14 @@ class Queue(val bucket: String, val topic: String) {
     }
 
     fun bucketDlx(): String {
-        return "${bucket}_dlx"
+        return "${bucket}-dlx"
     }
 
     fun arguments(): MutableMap<String?, Any?>?{
         return mutableMapOf(
-                "x-expires" to 24*60*60*1000, // If is unused 1 day it expires
+                "x-expires" to 24*60*60*1000, // 1 day
                 "x-dead-letter-exchange" to "bus-dlx",
                 "x-dead-letter-routing-key" to name()
         )
-    }
-
-    fun argumentsDlx(): MutableMap<String?, Any?>?{
-        return mutableMapOf()
     }
 }
