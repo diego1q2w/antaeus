@@ -5,7 +5,6 @@ services:
     image: diego1q2w/jdk-11-sqlite-alpine
     depends_on:
       - rabbitmq
-      - rabbitmq-scheduler-topology
     ports:
       - "7000:7000"
     volumes:
@@ -22,7 +21,6 @@ services:
     image: diego1q2w/jdk-11-sqlite-alpine
     depends_on:
       - rabbitmq
-      - rabbitmq-retrier-topology
     ports:
       - "7001:7000"
     volumes:
@@ -41,28 +39,6 @@ services:
       - "15672:15672"
     logging:
       driver: none
-
-  rabbitmq-scheduler-topology:
-    image: diego1q2w/setup-events-topology
-    depends_on:
-      - rabbitmq
-    volumes:
-      - ./pleo-antaeus-scheduler/src/main/resources/topology:/setup-events-topology/topology
-    environment:
-      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
-      SERVICE_NAME: scheduler # This is the group name of consumers or buckets
-      WAIT_FOR_PORTS: rabbitmq:5672
-
-  rabbitmq-retrier-topology:
-    image: diego1q2w/setup-events-topology
-    depends_on:
-      - rabbitmq
-    volumes:
-      - ./pleo-antaeus-retrier/src/main/resources/topology:/setup-events-topology/topology
-    environment:
-      RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672/
-      SERVICE_NAME: retrier # This is the group name of consumers or buckets
-      WAIT_FOR_PORTS: rabbitmq:5672
 
 volumes:
   build-scheduler-cache:

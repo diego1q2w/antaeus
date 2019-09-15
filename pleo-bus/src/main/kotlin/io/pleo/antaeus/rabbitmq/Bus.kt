@@ -15,7 +15,7 @@ typealias handler = suspend (Delivery) -> Unit
 
 class Bus(private val prefetchSize: Int = 10) {
     private var connection: Connection
-    private var handlers = mutableMapOf<String, pleoHandler >()
+    private var handlers = mutableMapOf<String, Pair<Queue, pleoHandler> >()
     private var isRunning = false
 
     init {
@@ -41,7 +41,7 @@ class Bus(private val prefetchSize: Int = 10) {
     }
 
     fun registerHandler(bucket: String, topic: String, handler: pleoHandler) {
-        handlers["$bucket:$topic"] = handler
+        handlers[topic] = (Queue(bucket, topic) to handler)
     }
 
     fun run() {
@@ -50,17 +50,20 @@ class Bus(private val prefetchSize: Int = 10) {
         }
 
         isRunning = true
-        handlers.forEach {(topic, handler) ->
+        handlers.forEach {(_, register) ->
             GlobalScope.launch {
-                runHandler(topic, handler)
+                runHandler(register)
             }
         }
     }
 
-    private suspend fun runHandler(topic: String, handler: pleoHandler) {
+    private suspend fun runHandler(register: Pair<Queue, pleoHandler>) {
+        val (queue, handler) = register
         connection.channel {
             val channel = this
-            consume(topic, prefetchSize) {
+            this.createTopology(queue)
+
+            consume(queue.name(), prefetchSize) {
                 consumeAlways@ while (isRunning) {
                     try {
                         consumeMessageWithConfirm(deliverHandler(handler, channel))
@@ -71,7 +74,7 @@ class Bus(private val prefetchSize: Int = 10) {
                         }
                     }
                 }
-                // When any of the consumers fails, will stop the rest of them plus will mark the service as unhealthy
+                // When any of the consumers fails, will stop the rest of them and mark the service as unhealthy
                 isRunning = false
             }
         }
