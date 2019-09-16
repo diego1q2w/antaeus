@@ -2,15 +2,13 @@ version: "3.4"
 
 services:
   scheduler:
-    image: diego1q2w/jdk-11-sqlite-alpine
+    build: .
     depends_on:
       - rabbitmq
     ports:
       - "7000:7000"
     volumes:
       - build-scheduler-cache:/root/.gradle
-      - .:/app
-      - /app/.gradle
     environment:
       RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672
       SERVICE_NAME: scheduler
@@ -18,15 +16,13 @@ services:
     command: bash -c "wait-for-ports ./gradlew :pleo-antaeus-scheduler:build && ./gradlew :pleo-antaeus-scheduler:run"
 
   retrier:
-    image: diego1q2w/jdk-11-sqlite-alpine
+    build: .
     depends_on:
       - rabbitmq
     ports:
       - "7001:7000"
     volumes:
       - build-retrier-cache:/root/.gradle
-      - .:/app
-      - /app/.gradle
     environment:
       RABBITMQ_HOSTNAME: amqp://guest:guest@rabbitmq:5672
       SERVICE_NAME: retrier

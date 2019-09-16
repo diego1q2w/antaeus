@@ -71,15 +71,15 @@ Uff!! that was something! But we get through it :). Before the wrap-up, I'd like
 First you'll have to run the `./script/server`. After you run it, a few things will happen.
 It will fetch if needed a couple of Docker images
 - It will fetch if needed a couple of Docker images
-- It will build the project in each container if is the first time it will take a while, and it might fail to compile :p. Don't worry after that I will always work. Since we are running two processes at the same time (in theory insolated) and due to docker volumes, it will fail if both processes try to compile the `buildSrc` at the same time (they both share it), there are few ways to fix that and probably I will if I have time. But since it is not a big deal, and thanks to the cache. It won't happen again; just run `./script/down` and hit `./script/server` again. 
-- Once started, It will create the bus topology: exchanges and topics.
+- It will build the project in each container; if is the first time it will take a while, after that gets faster. 
+- Once started, It will create the *bus topology*: exchanges and topics. 
 
 Now you'll have to make sure everything is running, `pleo-antaeus-retrier` and `pleo-antaeus-scheduler` expose an HTTP port `7000` and `7001` respectively. You can do that by hitting their health checks endpoints.
 
 - `pleo-antaeus-scheduler` - [http://localhost:7000/rest/health](http://localhost:7000/rest/health)
 - `pleo-antaeus-retrier` - [http://localhost:7001/rest/health](http://localhost:7001/rest/health)
 
-If both services are running then, you are good to go. In case something fail just, hit `./script/down` and `./script/server` again and it should be fine.
+If both services are running then, you are good to go. In case something fail just, hit `./script/down` and `./script/server` again and it should be fine. 
 
 The 1st of "this month" has come so is time to schedule some payments, to start the whole process you'll have to publish a message manually (It will be the only one). This event emulates that external factor that will result in real live trigger this process i.e., a CronJob in Kubernetes.
 
@@ -103,6 +103,40 @@ In case the retry has approved the event `InvoicePayRetryApprovedEvent` is publi
 You can check the payment history for a given invoice with this endpoint: `http://localhost:7001/rest/v1/payments/:invoiceId`
 Look at the ``Dear customer ..`` log in order to get some useful invoice ID. You can use the `http://localhost:7000/rest/v1/invoices/:invoiceId` with the same ID and the status should be `FAILED`, since both things happen due to the same event.
 
+#### API
+- `pleo-antaeus-scheduler` - [http://localhost:7000](http://localhost:7000)
+    * HTTP
+        * /rest/health
+        * /rest/v1/invoices
+        * /rest/v1/invoices/:id
+        * /rest/v1/customers
+        * /rest/v1/customers/:id
+    
+    * Bus
+        * Consumes
+            * `MonthlyEvent` - The only manual event, you'll need to publish it manually for the process to start in the RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`. Click the queue and click publish.
+            * `InvoiceScheduledEvent`
+            * `InvoicePayRetryApprovedEvent`
+            * `InvoicePayRetryExceededEvent`
+        * Produces
+            * `InvoiceScheduledEvent`
+            * `InvoicePayCommitSucceedEvent`
+            * `InvoicePayCommitFailedEvent`
+
+- `pleo-antaeus-retrier` - [http://localhost:7000](http://localhost:7000)
+    * HTTP
+        * /rest/health
+        * /rest/v1/payments/:invoiceId - every payment attempt for that given invoice ID
+    
+    * Bus
+        * Consumes
+            * `InvoicePayCommitFailedEvent`
+            * `InvoicePayCommitSucceedEvent`
+            * `InvoicePayRetryExceededEvent`
+        * Produces
+            * `InvoicePayRetryApprovedEvent`
+            * `InvoicePayRetryExceededEvent`
+    
 ### Improvements
 
 - Keep working on the on the abstraction in the `pleo-bus` module to get rid of one library I used to publish and consume.
@@ -140,7 +174,7 @@ And once you are done:
 
 Useful links:
 
-RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`.
+RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`. for this one the queues are created at start up time, so both services gotta be up and running for the queues to show up.
 
 `pleo-antaeus-scheduler` - [http://localhost:7000/rest/health](http://localhost:7000/rest/health)
 
