@@ -114,7 +114,7 @@ Look at the ``Dear customer ..`` log in order to get some useful invoice ID. You
 
     * Bus
         * Consumes
-            * `MonthlyEvent` - The only manual event, you'll need to publish it manually for the process to start in the RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`. Click the queue and click publish.
+            * `MonthlyEvent` - The only manual event, you'll need to publish it manually for the process to start in the RabbitMQ Management Tool: [http://localhost:15672](http://localhost:15672) user - `guest` password - `guest`. Click the queue and click publish.
             * `InvoiceScheduledEvent`
             * `InvoicePayRetryApprovedEvent`
             * `InvoicePayRetryExceededEvent`
@@ -174,7 +174,7 @@ And once you are done:
 
 Useful links:
 
-RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`. for this one the queues are created at start up time, so both services gotta be up and running for the queues to show up.
+RabbitMQ Management Tool: [http://localhost:15672](http://localhost:15672) user - `guest` password - `guest`. for this one the queues are created at start up time, so both services gotta be up and running for the queues to show up.
 
 `pleo-antaeus-scheduler` - [http://localhost:7000/rest/health](http://localhost:7000/rest/health)
 
