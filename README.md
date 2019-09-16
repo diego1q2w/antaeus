@@ -104,14 +104,14 @@ You can check the payment history for a given invoice with this endpoint: `http:
 Look at the ``Dear customer ..`` log in order to get some useful invoice ID. You can use the `http://localhost:7000/rest/v1/invoices/:invoiceId` with the same ID and the status should be `FAILED`, since both things happen due to the same event.
 
 #### API
-- `pleo-antaeus-scheduler` - [http://localhost:7000](http://localhost:7000)
+- **pleo-antaeus-scheduler** - [http://localhost:7000](http://localhost:7000)
     * HTTP
         * /rest/health
         * /rest/v1/invoices
         * /rest/v1/invoices/:id
         * /rest/v1/customers
         * /rest/v1/customers/:id
-    
+
     * Bus
         * Consumes
             * `MonthlyEvent` - The only manual event, you'll need to publish it manually for the process to start in the RabbitMQ Management Tool: [localhost:15672](localhost:15672) user - `guest` password - `guest`. Click the queue and click publish.
@@ -123,7 +123,7 @@ Look at the ``Dear customer ..`` log in order to get some useful invoice ID. You
             * `InvoicePayCommitSucceedEvent`
             * `InvoicePayCommitFailedEvent`
 
-- `pleo-antaeus-retrier` - [http://localhost:7000](http://localhost:7000)
+- **pleo-antaeus-retrier** - [http://localhost:7000](http://localhost:7000)
     * HTTP
         * /rest/health
         * /rest/v1/payments/:invoiceId - every payment attempt for that given invoice ID
