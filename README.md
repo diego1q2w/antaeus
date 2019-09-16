@@ -28,41 +28,41 @@ The `scheduler` microservice is going to hold the customer and invoice informati
 In the following sections, I will describe every step that took me from the initial challenge to its final state. And after that, I will explain in greater detail the final design, and last but not least, some conclusions and potential improvements.
 
 ### Iterations
-`Iteration 1` - I did the app refactor, no logic changed. I just made sure everything still works as it was. This commit is, perhaps, the largest commit this project will have.
+**Iteration 1** - I did the app refactor, no logic changed. I just made sure everything still works as it was. This commit is, perhaps, the largest commit this project will have.
 
-`Iteration 2` - Added the payment-schedule, which marks the invoices as "Ready to process" (every month), is worth noticing that this step does not execute the payment only mark it as `scheduled`.
+**Iteration 2** - Added the payment-schedule, which marks the invoices as "Ready to process" (every month), is worth noticing that this step does not execute the payment only mark it as `scheduled`.
 
-`Iteration 3` - The payments processor was added. It will fetch all the payments marked as `scheduled`, then mark them as `processing` and finally publish a message to the bus (Mocked for now). This event will in future iterations be consumed by the scheduler micro-service to commit the payment finally.
+**Iteration 3** - The payments processor was added. It will fetch all the payments marked as `scheduled`, then mark them as `processing` and finally publish a message to the bus (Mocked for now). This event will in future iterations be consumed by the scheduler micro-service to commit the payment finally.
 
-`Iteration 4` - Created the docker-compose which includes the RabbitMQ Image and topology + new set up scripts. The topology that `setup-events-topology` image creates emulates the topic-service of Kafka where separate consumer groups are entirely independent, thanks to that. They all see all messages from the topics they are consuming. To understand what I mean, go to `localhost:15672` user and pasword: `guest` and then go to queues. (You can only see this after both services are running since the topology gets created at startup time)
+**Iteration 4** - Created the docker-compose which includes the RabbitMQ Image and topology + new set up scripts. The topology that `setup-events-topology` image creates emulates the topic-service of Kafka where separate consumer groups are entirely independent, thanks to that. They all see all messages from the topics they are consuming. To understand what I mean, go to `localhost:15672` user and pasword: `guest` and then go to queues. (You can only see this after both services are running since the topology gets created at startup time)
 
-`Iteration 5` - Removed the mocked bus publisher and added the good one `pleo-bus`, for now, just publishing the topic `InvoiceScheduledEvent`.
+**Iteration 5** - Removed the mocked bus publisher and added the good one `pleo-bus`, for now, just publishing the topic `InvoiceScheduledEvent`.
 
-`Iteration 6` - Add the commit payment logic, the exceptions `CustomerNotFoundException` and `CurrencyMismatchException` produce a log that could potentially be a notification to be discarded finally. However, the `NetworkException`  will send the message to the DLX for future retrial. If there is neither data nor infra exceptions an event gets created for both cases `InvoicePayCommitSucceedEvent` and `InvoicePayCommitFailedEvent` with a failed reason, i.e., "Not enough founds." 
+**Iteration 6** - Add the commit payment logic, the exceptions `CustomerNotFoundException` and `CurrencyMismatchException` produce a log that could potentially be a notification to be discarded finally. However, the `NetworkException`  will send the message to the DLX for future retrial. If there is neither data nor infra exceptions an event gets created for both cases `InvoicePayCommitSucceedEvent` and `InvoicePayCommitFailedEvent` with a failed reason, i.e., "Not enough founds." 
 
-`Iteration 7` - I managed to enable the Dead-Letter queue, so now the whole process of `commit payment` is transactional.
+**Iteration 7** - I managed to enable the Dead-Letter queue, so now the whole process of `commit payment` is transactional.
 
-`Iteration 8` - Added the `InvoiceScheduledEvent` handler, which ultimately commits the payment.
+**Iteration 8** - Added the `InvoiceScheduledEvent` handler, which ultimately commits the payment.
 
-`Iteration 9` - Added the health check service for the bus.
+**Iteration 9** - Added the health check service for the bus.
 
-`Iteration 10` - Added the `MontlyEvent` which emulates "that" external factor that starts the process (every 1st of each month).
+**Iteration 10** - Added the `MontlyEvent` which emulates "that" external factor that starts the process (every 1st of each month).
 
-`Iteration 11` - Added the `pleo-antaeus-retrier` service, which will run in an independent container. It will communicate with the `pleo-antaeus-scheduler` via RabbitMQ events.
+**Iteration 11** - Added the `pleo-antaeus-retrier` service, which will run in an independent container. It will communicate with the `pleo-antaeus-scheduler` via RabbitMQ events.
 
-`Iteration 12` - Added the payment logic using `EvenSourcing`, so we get the latest state of the PaymentInvoice upon which we are going to decide if is worth retrying.
+**Iteration 12** - Added the payment logic using `EvenSourcing`, so we get the latest state of the PaymentInvoice upon which we are going to decide if is worth retrying.
 
-`Iteration 13` - Wire-up the `retrier` service, it emits 2 events `InvoicePayRetryApprovedEvent` and `InvoicePayRetryExceededEvent`. Which will be used to either retry the payment or mark it as failed. The `InvoicePayRetryExceededEvent` will be used for the notification domain as well.
+**Iteration 13** - Wire-up the `retrier` service, it emits 2 events `InvoicePayRetryApprovedEvent` and `InvoicePayRetryExceededEvent`. Which will be used to either retry the payment or mark it as failed. The `InvoicePayRetryExceededEvent` will be used for the notification domain as well.
 
-`Iteration 14` - Hooked up the `InvoicePayRetryApprovedEvent` and `InvoicePayRetryExceededEvent` into the `pleo-antaeus-scheduler`. So now payments are either committed again or marked as  `FAILED`.
+**Iteration 14** - Hooked up the `InvoicePayRetryApprovedEvent` and `InvoicePayRetryExceededEvent` into the `pleo-antaeus-scheduler`. So now payments are either committed again or marked as  `FAILED`.
 
-`Iteration 15` - Created the notification domain using the `InvoicePayRetryExceededEvent`. It's just a log since it's to prove that the same event can be used for two micro-services independently. You'll see in the logs a message like `Dear customer your invoice with ID <id> ...`, if you use that invoice ID to ask the `scheduler` service [http://localhost:7000/rest/v1/invoices/\<id\>](http://localhost:7000/rest/v1/invoices/:id), you will see a `FAILED` status for that specific invoice. Notice both processes happen in 2 different containers, but everything is sync thanks to the bus.
+**Iteration 15** - Created the notification domain using the `InvoicePayRetryExceededEvent`. It's just a log since it's to prove that the same event can be used for two micro-services independently. You'll see in the logs a message like `Dear customer your invoice with ID <id> ...`, if you use that invoice ID to ask the `scheduler` service [http://localhost:7000/rest/v1/invoices/\<id\>](http://localhost:7000/rest/v1/invoices/:id), you will see a `FAILED` status for that specific invoice. Notice both processes happen in 2 different containers, but everything is sync thanks to the bus.
 
-`Iteration 16` - Now the Bus topology is created at start up time, you'll have to wait for both services to fully start for it to show in the RabbitMQ Management Tool: [localhost:15672](localhost:15672) - user `guest` password `guest`.
+**Iteration 16** - Now the Bus topology is created at start up time, you'll have to wait for both services to fully start for it to show in the RabbitMQ Management Tool: [localhost:15672](localhost:15672) - user `guest` password `guest`.
 
-`Iteration 17` - Added few logic to the `utils/paymentProvider`. Now there is a probability of 3% that one of the documented exceptions happen with  `NetworkException` being the one with the highest likelihood. Those exceptions add some realism to the project. Notice how in the case of `NetworkException` the event lands in the `dlx` queue.
+**Iteration 17** - Added few logic to the `utils/paymentProvider`. Now there is a probability of 3% that one of the documented exceptions happen with  `NetworkException` being the one with the highest likelihood. Those exceptions add some realism to the project. Notice how in the case of `NetworkException` the event lands in the `dlx` queue.
 
-`Iteration 18` - And last but not least, added a small rest API in the `pleo-antaeus-retrier` to get all the payment attempts for a given invoice ID. [http://localhost:7001/rest/v1/payments/\<invoiceId\>](http://localhost:7001/rest/v1/payments/:invoiceId). Remember the `Dear customer your invoice with ID <id> ...` log message. Well, you can use the that `id` to hit the endpoint and see all the failed attempts.
+**Iteration 18** - And last but not least, added a small rest API in the `pleo-antaeus-retrier` to get all the payment attempts for a given invoice ID. [http://localhost:7001/rest/v1/payments/\<invoiceId\>](http://localhost:7001/rest/v1/payments/:invoiceId). Remember the `Dear customer your invoice with ID <id> ...` log message. Well, you can use the that `id` to hit the endpoint and see all the failed attempts.
 
 ### Final design
 
@@ -148,7 +148,7 @@ Look at the ``Dear customer ..`` log in order to get some useful invoice ID. You
 
 ### Conclusion
 
-Regardless of the decision, this is a project I enjoyed to do. In spite of my lack of knowledge in Kotlin I enjoyed to get through the small challenges, I found in the way. I got a lot of hands-on experience with this language as well. The things I like the most is the functional approach that comes with it. Also, the mocking library is so straight forward and intuitive, I'd wish there was a mocking library like this In Go :p. I still need some time to go into the details of this language, but so far, so good.
+Thanks for the challenge :), this is a project I enjoyed to do. In spite of my lack of knowledge in Kotlin I enjoyed to get through the small challenges, I found in the way. I got a lot of hands-on experience with this language as well. The things I like the most is the functional approach that comes with it. Also, the mocking library is so straight forward and intuitive, I'd wish there was a mocking library like this In Go :p. I still need some time to go into the details of this language, but so far, so good.
 
 I spend Tuesday and Wednesday in the afternoons learning Kotlin. I start working on the challenge on Thursday in the afternoon, and I continued on Friday afternoon for a couple of hours. However, I didn't progress much I spent most of the time fighting with Gradle: s, you know I was Friday 13th. Saturday was the day I spent most of the time, and thus when I get most of the things done; on Sunday, I work intermittently during the day to wrap up everything up but mostly in the afternoon.
 
